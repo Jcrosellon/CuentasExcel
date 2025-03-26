@@ -1,0 +1,5 @@
+*.xlsx
+*.jpg
+temp-*
+pagos/
+respuestas.json
