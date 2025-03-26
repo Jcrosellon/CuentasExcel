@@ -1,0 +1,4 @@
+2025/03/26-16:57:34.729 8fc34 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/03/26-16:57:34.730 8fc34 Recovering log #131
+2025/03/26-16:57:34.735 8fc34 Reusing old log C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000131.log 
+2025/03/26-16:57:38.900 c9b4 Manual compaction at level-0 from '\x008\x00\x00\x00' @ 72057594037927935 : 1 .. '\x009\x00\x00\x00' @ 0 : 0; will stop at (end)
