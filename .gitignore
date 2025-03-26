@@ -3,3 +3,4 @@
 temp-*
 pagos/
 respuestas.json
+node_modules/
