@@ -1,129 +1,195 @@
-// ✅ index.js
-const { actualizarRespuestaEnExcel } = require('./guardarRespuestas');
-const { DateTime } = require("luxon");
-const cron = require("node-cron");
+// index.js
 const qrcode = require("qrcode-terminal");
 const { Client, LocalAuth } = require("whatsapp-web.js");
-const { leerClientes } = require("./utils");
-const { validarComprobante } = require("./ocrValidator");
+const { DateTime } = require("luxon");
 const fs = require("fs");
 const { writeFile } = require("fs/promises");
 
-const path = './respuestas.json';
+const ExcelJS = require("exceljs");
+const config = require("./config.json");
+
+const { leerClientes } = require("./utils");             // Lee filas del Excel
+const { validarComprobante } = require("./ocrValidator"); // OCR
+const { actualizarRespuestaEnExcel } = require("./guardarRespuestas"); // Actualiza RESPUESTA/FECHA
+
+const path = "./respuestas.json";
 
 const client = new Client({
   authStrategy: new LocalAuth(),
-  puppeteer: { headless: true }
+  puppeteer: { headless: true },
 });
 
-client.on("qr", qr => {
+client.on("qr", (qr) => {
   qrcode.generate(qr, { small: true });
   console.log("📲 Escanea el código QR con tu WhatsApp");
 });
 
 client.on("ready", async () => {
-  console.log("✅ Bot listo. Enviando mensaje de prueba y esperando las 6:00 p.m...");
+  console.log("✅ Bot listo. Enviando mensajes...");
 
-  const clientes = leerClientes();
+  try {
+    const clientes = leerClientes();
+    console.log(`Se encontraron ${clientes.length} filas en el Excel.`);
 
-  console.log("📄 Clientes leídos:", clientes);
+    for (const cliente of clientes) {
+      const nombre = cliente["NOMBRE"] || "Sin Nombre";
+      const cuenta = cliente["CUENTA"] || "";
+      const dispositivo = cliente["DISPOSITIVO"] || "";
+      const valor = cliente["VALOR"] || "0";
 
-  for (const cliente of clientes) {
-    const numero = cliente["Número WhatsApp"].toString().split(".")[0].split("E")[0] + "@c.us";
-    const fechaFinal = DateTime.fromJSDate(new Date((cliente["Fecha Final"] - 25569) * 86400 * 1000)).startOf("day");
-    const mensaje = `Buenas tardes ${cliente.Nombre} 👋\nMañana se cumple tu servicio de ${cliente.Cuenta} con valor $${cliente.Valor}.\n\n¿Deseas continuar?\n\nResponde con:\n✅ Sí  o  ❌ No`;
-    await client.sendMessage(numero, mensaje);
-    console.log("📩 Mensaje de prueba enviado a:", cliente.Nombre);
-    break; // Solo al primero para test
+      const numeroRaw = cliente["NUMERO WHATSAPP"]?.toString() || "";
+      let numeroLimpio = numeroRaw.split(".")[0].split("E")[0];
+      // Si hace falta prefijo país:
+      // numeroLimpio = "57" + numeroLimpio;
+
+      const numeroWhatsApp = numeroLimpio + "@c.us";
+
+      const mensaje = `Buenas noches ${nombre}, para recordarle que MAÑANA se cumple su servicio de ${cuenta}, cuenta para ${dispositivo}, con valor de ${valor}.\n¿Desea continuar?\n\nResponda SI o NO`;
+
+      console.log(`> Enviando mensaje a ${nombre} (${numeroWhatsApp})`);
+      await client.sendMessage(numeroWhatsApp, mensaje);
+      console.log(`📩 Mensaje enviado a: ${nombre}`);
+    }
+  } catch (error) {
+    console.error("❌ Error durante el envío inicial:", error);
   }
 });
 
-client.on("message", async msg => {
+// Manejo de mensajes
+client.on("message", async (msg) => {
+  if (msg.fromMe) return; // evitar bucle
+
   const texto = msg.body.trim().toLowerCase();
   const numero = msg.from.replace("@c.us", "");
-  const fecha = DateTime.now().setZone("America/Bogota").toISODate();
+  const fechaActual = DateTime.now().setZone("America/Bogota").toISODate();
+
+  // Encontrar el cliente en Excel
   const clientes = leerClientes();
+  const clienteData = clientes.find((c) => {
+    const col = c["NUMERO WHATSAPP"]?.toString() || "";
+    return col.includes(numero);
+  });
+  if (!clienteData) return; // no está en Excel
 
-
-  const clienteData = clientes.find(c => c["Número WhatsApp"].toString().includes(numero));
-  if (!clienteData) return;
-
+  // Si llega un comprobante (imagen)
   if (msg.hasMedia) {
     msg.reply("📸 Recibimos tu comprobante. Validando...");
+
+    // Descargamos la imagen a buffer
     const media = await msg.downloadMedia();
-    const buffer = Buffer.from(media.data, 'base64');
+    const buffer = Buffer.from(media.data, "base64");
     const tempPath = `./temp-${numero}.jpg`;
     await writeFile(tempPath, buffer);
 
-    const resultado = await validarComprobante(tempPath, clienteData.Valor.toString().replace(/\./g, ""));
+    // Valor esperado
+    const valorEsperado = clienteData["VALOR"]
+      ? clienteData["VALOR"].toString().replace(/\./g, "")
+      : "20000";
 
-    if (resultado.valido) {
-      msg.reply("✅ Comprobante verificado correctamente. ¡Gracias por tu pago!");
-      await actualizarRespuestaEnExcel(numero, "✅ Comprobante", fecha);
-
-    } else {
-      msg.reply("⚠️ No pudimos validar tu comprobante. Asegúrate de que se vea el valor, la fecha y el número de destino.");
+    const resultado = await validarComprobante(tempPath, valorEsperado);
+    if (!resultado.valido) {
+      msg.reply("⚠️ No pudimos validar tu comprobante. Revisa que se vea el valor, la fecha y el número de destino (3183192913).");
+      return;
     }
+
+    const nuevaReferencia = (resultado.referenciaDetectada || "").trim();
+    // Ve a la fila de este usuario y haz la lógica de “mismo/diferente comprobante”
+    const cambioExitoso = await actualizarComprobanteFila(numero, nuevaReferencia);
+
+    if (!cambioExitoso) {
+      // Si la función nos dice que es “el mismo comprobante”, rechazamos
+      msg.reply(`❌ Este comprobante ya está registrado (Ref: ${nuevaReferencia}).\nPago rechazado.`);
+      return;
+    }
+
+    // Si todo bien (era distinto), confirmamos
+    msg.reply(`✅ Comprobante verificado. Referencia: ${nuevaReferencia}\n¡Gracias por tu pago!`);
+    // Además, actualizamos RESPUESTA = "✅ Comprobante" en Excel
+    await actualizarRespuestaEnExcel(numero, "✅ Comprobante", fechaActual, nuevaReferencia);
     return;
   }
 
-  let respuestaTexto = "";
-  if (["✅ sí", "sí", "si"].includes(texto)) {
-    respuestaTexto = "✅ Sí";
-  } else if (["❌ no", "no"].includes(texto)) {
-    respuestaTexto = "❌ No";
-  } else {
-    return;
+  // Manejo de SI/NO
+  if (["si", "sí", "✅ si"].includes(texto)) {
+    msg.reply("¡Perfecto! Para continuar, realiza el pago a Nequi o Daviplata: 3183192913 y adjunta el pantallazo por aquí. Yo me encargaré de validarlo. 🙌");
+    await guardarRespuesta(numero, clienteData, "✅ Sí", fechaActual);
+
+  } else if (["no", "❌ no"].includes(texto)) {
+    msg.reply("Siento que hayas tenido algún inconveniente con el servicio. Aquí estaré si decides regresar más adelante. ¡Un saludo!");
+    await guardarRespuesta(numero, clienteData, "❌ No", fechaActual);
   }
+});
 
-  const respuesta = {
-    nombre: clienteData.Nombre,
-    numero,
-    cuenta: clienteData.Cuenta,
-    valor: clienteData.Valor,
-    respuesta: respuestaTexto,
-    fecha
-  };
-
+// Guarda la respuesta (SI/NO) en JSON + Excel
+async function guardarRespuesta(numero, clienteData, respuestaTexto, fechaActual) {
   let registros = [];
   if (fs.existsSync(path)) {
     registros = JSON.parse(fs.readFileSync(path));
   }
-  registros.push(respuesta);
+
+  const nuevaRespuesta = {
+    nombre: clienteData["NOMBRE"],
+    numero,
+    cuenta: clienteData["CUENTA"],
+    valor: clienteData["VALOR"],
+    respuesta: respuestaTexto,
+    fecha: fechaActual
+  };
+
+  registros.push(nuevaRespuesta);
   fs.writeFileSync(path, JSON.stringify(registros, null, 2));
-  await actualizarRespuestaEnExcel(numero, respuestaTexto, fecha);
 
+  // Actualiza Excel con la respuesta (sin referencia)
+  await actualizarRespuestaEnExcel(numero, respuestaTexto, fechaActual, "");
   console.log(`📝 Respuesta registrada: ${numero} => ${respuestaTexto}`);
+}
 
-  if (respuestaTexto === "✅ Sí") {
-    msg.reply("¡Gracias por tu respuesta! 🙌\n\nPara continuar, realiza el pago a Nequi o Daviplata: *3183192913* y envía el pantallazo por aquí 📸.");
-  } else {
-    msg.reply("Lo entendemos 😊. Si decides regresar más adelante, estaremos aquí para ayudarte. ¡Gracias por tu tiempo!");
+/**
+ * Actualiza la columna COMPROBANTE de la fila del usuario (según NUMERO WHATSAPP).
+ *  - Si es la misma referencia, retorna false (rechaza).
+ *  - Si es distinta, la sobreescribe (limpia la vieja) y retorna true.
+ */
+async function actualizarComprobanteFila(numero, nuevaRef) {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.readFile(config.excelPath);
+
+  const hoja = workbook.getWorksheet(config.hojaExcel);
+  if (!hoja) return false;
+
+  // Columnas
+  const headerRow = hoja.getRow(1).values; 
+  const colNumero = headerRow.indexOf("NUMERO WHATSAPP");
+  const colComprobante = headerRow.indexOf("COMPROBANTE");
+
+  if (colNumero === -1 || colComprobante === -1) {
+    // Sin columna, no hacemos nada
+    return false;
   }
-});
+
+  // Recorremos filas en busca de la que coincida con 'numero'
+  let cambioHecho = false;
+
+  hoja.eachRow((row, rowNumber) => {
+    if (rowNumber === 1) return; // encabezado
+    const celdaNumero = row.getCell(colNumero).value?.toString() || "";
+    if (celdaNumero.includes(numero)) {
+      // Fila del cliente
+      const refActual = row.getCell(colComprobante).value?.toString().trim() || "";
+      // Si la nueva = actual -> rechazamos
+      if (refActual.toLowerCase() === nuevaRef.toLowerCase()) {
+        cambioHecho = false; // No aprobamos
+      } else {
+        // Sobrescribimos con la nueva
+        row.getCell(colComprobante).value = nuevaRef;
+        cambioHecho = true;
+      }
+    }
+  });
+
+  if (cambioHecho) {
+    await workbook.xlsx.writeFile(config.excelPath);
+  }
+  return cambioHecho;
+}
 
 client.initialize();
-
-cron.schedule("0 18 * * *", async () => {
-  const ahora = DateTime.now().setZone("America/Bogota").startOf("day");
-  const mañana = ahora.plus({ days: 1 });
-  const clientes = leerClientes();
-
-
-  for (const cliente of clientes) {
-    const fechaFinal = DateTime.fromJSDate(new Date((cliente["Fecha Final"] - 25569) * 86400 * 1000)).startOf("day");
-    const numero = cliente["Número WhatsApp"].toString().split(".")[0].split("E")[0] + "@c.us";
-
-    if (fechaFinal.equals(mañana)) {
-      const mensaje = `Buenas tardes ${cliente.Nombre} 👋\nMañana se cumple tu servicio de ${cliente.Cuenta} con valor $${cliente.Valor}.\n\n¿Deseas continuar?\n\nResponde con:\n✅ Sí  o  ❌ No`;
-      await client.sendMessage(numero, mensaje);
-      console.log("📩 Recordatorio enviado a:", cliente.Nombre);
-    } else if (fechaFinal.equals(ahora)) {
-      const mensaje = `Hola ${cliente.Nombre}, hoy se vence tu servicio de ${cliente.Cuenta}. Si tienes dudas, escríbenos. ¡Gracias!`;
-      await client.sendMessage(numero, mensaje);
-      console.log("📩 Notificación del día enviada a:", cliente.Nombre);
-    }
-  }
-}, {
-  timezone: "America/Bogota"
-});

@@ -12,33 +12,44 @@ const validarComprobante = async (rutaImagen, valorMinimo = 20000) => {
   const textoPlano = text.toLowerCase();
   console.log("📝 Texto detectado:", textoPlano);
 
-  // 1. Buscar valores monetarios como $ 1.000,00 o 20000
+  // 1) Detectar valor
   const valoresDetectados = [...textoPlano.matchAll(/\$?\s?([\d.,]+)/g)].map(match => {
-    const valor = match[1].replace(/\./g, "").replace(",", ".");
-    return parseFloat(valor);
+    const v = match[1].replace(/\./g, "").replace(",", ".");
+    return parseFloat(v);
   });
+  const valorValido = valoresDetectados.some(v => v >= parseFloat(valorMinimo));
 
-  const valorValido = valoresDetectados.some(v => v >= valorMinimo);
+  // 2) Numero de destino (Si quieres mantenerlo obligatorio)
+  const numeroValido = /3183192913/.test(textoPlano);
 
-  // 2. Fecha actual en español
-  const hoy = DateTime.now().setZone("America/Bogota");
-  const mesLetras = hoy.setLocale("es").toFormat("LLLL");
-  const fechaEsperada = new RegExp(`${hoy.day} de ${mesLetras} de ${hoy.year}`, "i");
-  const fechaValida = fechaEsperada.test(textoPlano);
+  // 3) Buscar la palabra "referencia" y capturar lo que venga después.
+  //    Por ejemplo, si Tesseract lee algo como: "Referencia M7934504"
+  //    este regex busca la palabra "referencia" seguida de espacio o dos puntos, y captura lo siguiente hasta el salto de linea o espacio.
+  const refRegex = /referencia[:\s]+([a-z0-9\-]+)/i;
+  // Asegúrate de que Tesseract reconozca la línea como "referencia m7934504".
+  // [a-z0-9\-]+ -> Capturará algo como "M7934504" (en minúsculas, pues pasamos toLowerCase).
+  // Si en tu imagen sale con mayúsculas, no importa, .toLowerCase() uniformiza.
 
-  // 3. Número de destino (Nequi o Daviplata)
-  const numerosValidos = [/3183192913/];
-  const numeroValido = numerosValidos.some(rx => rx.test(textoPlano));
+  let referenciaDetectada = "";
+  const refMatch = textoPlano.match(refRegex);
+  if (refMatch) {
+    referenciaDetectada = refMatch[1].trim();
+  }
 
-  const coincidencias = {
-    valor: valorValido,
-    fecha: fechaValida,
-    numero: numeroValido
+  console.log("🔎 valorValido:", valorValido, "numeroValido:", numeroValido, "referencia:", referenciaDetectada);
+
+  // 4) Decide qué es obligatorio
+  const valido = valorValido && numeroValido && !!referenciaDetectada;
+
+  return {
+    valido,
+    coincidencias: {
+      valor: valorValido,
+      numero: numeroValido,
+      referencia: !!referenciaDetectada
+    },
+    referenciaDetectada
   };
-
-  const valido = coincidencias.valor && coincidencias.fecha && coincidencias.numero;
-
-  return { valido, coincidencias };
 };
 
 module.exports = { validarComprobante };

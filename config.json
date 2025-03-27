@@ -1,5 +1,4 @@
 {
-    "excelPath": "C:/Users/JoseRosellon/OneDrive - LOGISTICA FERRETERA/CUENTASSS.xlsx",
-    "hojaExcel": "miscuentas"
-  }
-  
+  "excelPath": "./CUENTASEXCEL.xlsx",
+  "hojaExcel": "Hoja1"
+}
