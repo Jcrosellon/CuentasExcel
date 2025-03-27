@@ -1,4 +1,5 @@
 {
   "excelPath": "./CUENTASEXCEL.xlsx",
-  "hojaExcel": "Hoja1"
+  "hojaExcel": "Hoja1",
+  "adminPhone": "573183192913"
 }
