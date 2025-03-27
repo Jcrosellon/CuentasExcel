@@ -1,57 +1,82 @@
-// guardarRespuestas.js
-const ExcelJS = require('exceljs');
+const ExcelJS = require("exceljs");
+const { DateTime } = require("luxon");
 const config = require("./config.json");
 
-/**
- * Actualiza la fila que coincida con "numero" en la columna NUMERO WHATSAPP,
- * poniendo en RESPUESTA y FECHA RESPUESTA, y opcionalmente COMPROBANTE.
- * Guarda "✅ Sí" o "❌ No" como respuesta. Si viene otro valor (como "✅ Comprobante"), no lo guarda.
- *
- * @param {string} numero - El número sin @c.us (ej: "3112503929")
- * @param {string} respuesta - Ej: "✅ Sí" o "❌ No"
- * @param {string} fecha - Ej: "2025-03-27"
- * @param {string} comprobante - (opcional) La referencia extraída
- */
-const actualizarRespuestaEnExcel = async (numero, respuesta, fecha, comprobante = "") => {
+async function actualizarRespuestaEnExcel(numero, respuestaTexto, fechaActual, referencia) {
+  // Tu lógica para actualizar Excel
+}
+
+// 👇 ESTA ES LA QUE NECESITAS EXPORTAR
+async function actualizarComprobanteFila(numero, nuevaRef) {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(config.excelPath);
-
   const hoja = workbook.getWorksheet(config.hojaExcel);
-  if (!hoja) {
-    throw new Error(`No se encontró la hoja: ${config.hojaExcel}`);
-  }
+  if (!hoja) return false;
 
-  // Columnas
-  const headerRow = hoja.getRow(1).values;
-  const colNumero = headerRow.indexOf("NUMERO WHATSAPP");
-  const colResp = headerRow.indexOf("RESPUESTA");
-  const colFechaResp = headerRow.indexOf("FECHA RESPUESTA");
-  const colComprobante = headerRow.indexOf("COMPROBANTE");
+  const header = hoja.getRow(1).values;
+  const colNumero = header.indexOf("NUMERO WHATSAPP");
+  const colComprobante = header.indexOf("COMPROBANTE");
+  const colFechaInicio = header.indexOf("FECHA INICIO");
+  const colFechaFinal = header.indexOf("FECHA FINAL");
 
-  if (colNumero === -1 || colResp === -1 || colFechaResp === -1) {
-    throw new Error("❌ Faltan columnas obligatorias en el Excel.");
-  }
+  let cambio = false;
 
-  hoja.eachRow((row, rowNumber) => {
-    if (rowNumber === 1) return;
+  hoja.eachRow((row, i) => {
+    if (i === 1) return;
+    const celdaNumero = row.getCell(colNumero).value?.toString() || "";
+    if (celdaNumero.includes(numero)) {
+      const refActual = row.getCell(colComprobante).value?.toString().trim() || "";
+      if (refActual.toLowerCase() !== nuevaRef.toLowerCase()) {
+        row.getCell(colComprobante).value = nuevaRef;
 
-    const celdaNumero = row.getCell(colNumero).value?.toString();
-    if (celdaNumero && celdaNumero.includes(numero)) {
-      // Guardamos solo SI o NO como respuesta
-      if (respuesta === "✅ Sí" || respuesta === "❌ No") {
-        row.getCell(colResp).value = respuesta;
-        row.getCell(colFechaResp).value = fecha;
-      }
+        // Lógica de fechas
+        if (colFechaInicio !== -1 && colFechaFinal !== -1) {
+          const val = row.getCell(colFechaFinal).value;
+          let dtFinal;
+          if (val instanceof Date) {
+            dtFinal = DateTime.fromJSDate(val).setZone("America/Bogota");
+          } else if (typeof val === "number") {
+            dtFinal = DateTime.fromJSDate(new Date((val - 25569) * 86400 * 1000)).setZone("America/Bogota");
+          } else if (typeof val === "string") {
+            dtFinal = DateTime.fromFormat(val, "dd/LL/yyyy", { zone: "America/Bogota" });
+            if (!dtFinal.isValid) dtFinal = DateTime.fromFormat(val, "yyyy-MM-dd", { zone: "America/Bogota" });
+          }
 
-      // Comprobante va aparte si viene como parámetro
-      if (colComprobante !== -1 && comprobante) {
-        row.getCell(colComprobante).value = comprobante;
+          if (dtFinal?.isValid) {
+            row.getCell(colFechaInicio).value = dtFinal.toFormat("dd/MM/yyyy");
+            const nueva = sumarMesClampeando(dtFinal);
+            row.getCell(colFechaFinal).value = nueva.toFormat("dd/MM/yyyy");
+          }
+        }
+
+        cambio = true;
       }
     }
   });
 
-  await workbook.xlsx.writeFile(config.excelPath);
-  console.log(`🟢 Excel actualizado con respuesta de ${numero}, comprobante: ${comprobante}`);
-};
+  if (cambio) {
+    await workbook.xlsx.writeFile(config.excelPath);
+    console.log("🟢 Excel actualizado con comprobante:", nuevaRef);
+  }
 
-module.exports = { actualizarRespuestaEnExcel };
+  return cambio;
+}
+
+function sumarMesClampeando(dtOriginal) {
+  let newMonth = dtOriginal.month + 1;
+  let newYear = dtOriginal.year;
+  if (newMonth > 12) {
+    newMonth = 1;
+    newYear++;
+  }
+  const temp = DateTime.local(newYear, newMonth, 1).setZone(dtOriginal.zone);
+  const daysInNextMonth = temp.daysInMonth;
+  const newDay = Math.min(dtOriginal.day, daysInNextMonth);
+
+  return DateTime.local(newYear, newMonth, newDay).setZone(dtOriginal.zone).set({ hour: 12 });
+}
+
+module.exports = {
+  actualizarRespuestaEnExcel,
+  actualizarComprobanteFila // 👈 ASEGÚRATE DE QUE ESTA LÍNEA ESTÉ PRESENTE
+};

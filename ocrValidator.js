@@ -36,6 +36,8 @@ const validarComprobante = async (rutaImagen, valorMinimo = 20000) => {
     referenciaDetectada = refMatch[1].trim();
   }
 
+  
+
   console.log("🔎 valorValido:", valorValido, "numeroValido:", numeroValido, "referencia:", referenciaDetectada);
 
   // 4) Decide qué es obligatorio
