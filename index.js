@@ -8,9 +8,9 @@ const { writeFile } = require("fs/promises");
 const ExcelJS = require("exceljs");
 const config = require("./config.json");
 
-const { leerClientes } = require("./utils");             // Lee filas del Excel
-const { validarComprobante } = require("./ocrValidator"); // OCR
-const { actualizarRespuestaEnExcel } = require("./guardarRespuestas"); // Actualiza RESPUESTA/FECHA
+const { leerClientes } = require("./utils");
+const { validarComprobante } = require("./ocrValidator");
+const { actualizarRespuestaEnExcel } = require("./guardarRespuestas");
 
 const path = "./respuestas.json";
 
@@ -39,12 +39,12 @@ client.on("ready", async () => {
 
       const numeroRaw = cliente["NUMERO WHATSAPP"]?.toString() || "";
       let numeroLimpio = numeroRaw.split(".")[0].split("E")[0];
-      // Si hace falta prefijo país:
-      // numeroLimpio = "57" + numeroLimpio;
-
       const numeroWhatsApp = numeroLimpio + "@c.us";
 
-      const mensaje = `Buenas noches ${nombre}, para recordarle que MAÑANA se cumple su servicio de ${cuenta}, cuenta para ${dispositivo}, con valor de ${valor}.\n¿Desea continuar?\n\nResponda SI o NO`;
+      const mensaje = `🌙 Buenas noches ${nombre}, para recordarte que MAÑANA se vence tu servicio de ${cuenta}, para ${dispositivo}, por un valor de ${valor}.
+¿Deseas continuar? ✨
+
+Responde con *SI* o *NO* ✅❌`;
 
       console.log(`> Enviando mensaje a ${nombre} (${numeroWhatsApp})`);
       await client.sendMessage(numeroWhatsApp, mensaje);
@@ -55,72 +55,77 @@ client.on("ready", async () => {
   }
 });
 
-// Manejo de mensajes
 client.on("message", async (msg) => {
-  if (msg.fromMe) return; // evitar bucle
+  if (msg.fromMe) return;
 
   const texto = msg.body.trim().toLowerCase();
   const numero = msg.from.replace("@c.us", "");
   const fechaActual = DateTime.now().setZone("America/Bogota").toISODate();
 
-  // Encontrar el cliente en Excel
   const clientes = leerClientes();
   const clienteData = clientes.find((c) => {
     const col = c["NUMERO WHATSAPP"]?.toString() || "";
     return col.includes(numero);
   });
-  if (!clienteData) return; // no está en Excel
+  if (!clienteData) return;
 
-  // Si llega un comprobante (imagen)
   if (msg.hasMedia) {
     msg.reply("📸 Recibimos tu comprobante. Validando...");
-
-    // Descargamos la imagen a buffer
     const media = await msg.downloadMedia();
     const buffer = Buffer.from(media.data, "base64");
     const tempPath = `./temp-${numero}.jpg`;
     await writeFile(tempPath, buffer);
 
-    // Valor esperado
     const valorEsperado = clienteData["VALOR"]
       ? clienteData["VALOR"].toString().replace(/\./g, "")
       : "20000";
 
     const resultado = await validarComprobante(tempPath, valorEsperado);
     if (!resultado.valido) {
-      msg.reply("⚠️ No pudimos validar tu comprobante. Revisa que se vea el valor, la fecha y el número de destino (3183192913).");
+      msg.reply("⚠️ No pudimos validar tu comprobante. Asegúrate de que se vea el valor, la fecha y el número de destino (3183192913).");
       return;
     }
 
     const nuevaReferencia = (resultado.referenciaDetectada || "").trim();
-    // Ve a la fila de este usuario y haz la lógica de “mismo/diferente comprobante”
     const cambioExitoso = await actualizarComprobanteFila(numero, nuevaReferencia);
 
     if (!cambioExitoso) {
-      // Si la función nos dice que es “el mismo comprobante”, rechazamos
       msg.reply(`❌ Este comprobante ya está registrado (Ref: ${nuevaReferencia}).\nPago rechazado.`);
       return;
     }
 
-    // Si todo bien (era distinto), confirmamos
-    msg.reply(`✅ Comprobante verificado. Referencia: ${nuevaReferencia}\n¡Gracias por tu pago!`);
-    // Además, actualizamos RESPUESTA = "✅ Comprobante" en Excel
-    await actualizarRespuestaEnExcel(numero, "✅ Comprobante", fechaActual, nuevaReferencia);
+    msg.reply(`✅ Comprobante verificado. Referencia: ${nuevaReferencia}\n¡Gracias por tu pago! 🙌`);
+    await actualizarRespuestaEnExcel(numero, "SI", fechaActual, nuevaReferencia);
     return;
   }
 
-  // Manejo de SI/NO
   if (["si", "sí", "✅ si"].includes(texto)) {
-    msg.reply("¡Perfecto! Para continuar, realiza el pago a Nequi o Daviplata: 3183192913 y adjunta el pantallazo por aquí. Yo me encargaré de validarlo. 🙌");
-    await guardarRespuesta(numero, clienteData, "✅ Sí", fechaActual);
-
+    msg.reply("👍 ¡Perfecto! Para continuar, realiza el pago a *Nequi o Daviplata: 3183192913* y adjunta el pantallazo por aquí. Yo me encargaré de validarlo. 🧐📲");
+    await guardarRespuesta(numero, clienteData, "SI", fechaActual);
   } else if (["no", "❌ no"].includes(texto)) {
-    msg.reply("Siento que hayas tenido algún inconveniente con el servicio. Aquí estaré si decides regresar más adelante. ¡Un saludo!");
-    await guardarRespuesta(numero, clienteData, "❌ No", fechaActual);
+    const catalogo = fs.readFileSync("./catalogo.txt", "utf8");
+    const mensaje = `☹️ Siento que hayas tenido algún inconveniente. Si decides regresar, estaré aquí para ayudarte. 🌟\n\nMientras tanto, te comparto nuestro catálogo de precios actualizados:\n\n${catalogo}`;
+    msg.reply(mensaje);
+    await guardarRespuesta(numero, clienteData, "NO", fechaActual);
   }
 });
 
-// Guarda la respuesta (SI/NO) en JSON + Excel
+function sumarMesClampeando(dtOriginal) {
+  let newMonth = dtOriginal.month + 1;
+  let newYear = dtOriginal.year;
+  if (newMonth > 12) {
+    newMonth = 1;
+    newYear++;
+  }
+  const temp = DateTime.local(newYear, newMonth, 1).setZone(dtOriginal.zone);
+  const daysInNextMonth = temp.daysInMonth;
+  const newDay = Math.min(dtOriginal.day, daysInNextMonth);
+
+  return DateTime.local(newYear, newMonth, newDay)
+    .setZone(dtOriginal.zone)
+    .set({ hour: 12, minute: 0, second: 0 });
+}
+
 async function guardarRespuesta(numero, clienteData, respuestaTexto, fechaActual) {
   let registros = [];
   if (fs.existsSync(path)) {
@@ -139,48 +144,59 @@ async function guardarRespuesta(numero, clienteData, respuestaTexto, fechaActual
   registros.push(nuevaRespuesta);
   fs.writeFileSync(path, JSON.stringify(registros, null, 2));
 
-  // Actualiza Excel con la respuesta (sin referencia)
   await actualizarRespuestaEnExcel(numero, respuestaTexto, fechaActual, "");
   console.log(`📝 Respuesta registrada: ${numero} => ${respuestaTexto}`);
 }
 
-/**
- * Actualiza la columna COMPROBANTE de la fila del usuario (según NUMERO WHATSAPP).
- *  - Si es la misma referencia, retorna false (rechaza).
- *  - Si es distinta, la sobreescribe (limpia la vieja) y retorna true.
- */
 async function actualizarComprobanteFila(numero, nuevaRef) {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile(config.excelPath);
-
   const hoja = workbook.getWorksheet(config.hojaExcel);
   if (!hoja) return false;
 
-  // Columnas
-  const headerRow = hoja.getRow(1).values; 
+  const headerRow = hoja.getRow(1).values;
   const colNumero = headerRow.indexOf("NUMERO WHATSAPP");
   const colComprobante = headerRow.indexOf("COMPROBANTE");
+  const colFechaInicio = headerRow.indexOf("FECHA INICIO");
+  const colFechaFinal = headerRow.indexOf("FECHA FINAL");
 
-  if (colNumero === -1 || colComprobante === -1) {
-    // Sin columna, no hacemos nada
-    return false;
-  }
+  if (colNumero === -1 || colComprobante === -1) return false;
 
-  // Recorremos filas en busca de la que coincida con 'numero'
   let cambioHecho = false;
 
   hoja.eachRow((row, rowNumber) => {
-    if (rowNumber === 1) return; // encabezado
+    if (rowNumber === 1) return;
     const celdaNumero = row.getCell(colNumero).value?.toString() || "";
     if (celdaNumero.includes(numero)) {
-      // Fila del cliente
       const refActual = row.getCell(colComprobante).value?.toString().trim() || "";
-      // Si la nueva = actual -> rechazamos
-      if (refActual.toLowerCase() === nuevaRef.toLowerCase()) {
-        cambioHecho = false; // No aprobamos
+
+      if (refActual.toLowerCase() === nuevaRef.toLowerCase() && refActual !== "") {
+        cambioHecho = false;
       } else {
-        // Sobrescribimos con la nueva
         row.getCell(colComprobante).value = nuevaRef;
+
+        if (colFechaInicio !== -1 && colFechaFinal !== -1) {
+          let valorFechaFinal = row.getCell(colFechaFinal).value;
+          let dtFinal;
+
+          if (valorFechaFinal instanceof Date) {
+            dtFinal = DateTime.fromJSDate(valorFechaFinal).setZone("America/Bogota");
+          } else if (typeof valorFechaFinal === "number") {
+            dtFinal = DateTime.fromJSDate(new Date((valorFechaFinal - 25569) * 86400 * 1000)).setZone("America/Bogota");
+          } else if (typeof valorFechaFinal === "string") {
+            dtFinal = DateTime.fromFormat(valorFechaFinal, "dd/LL/yyyy", { zone: "America/Bogota" });
+            if (!dtFinal.isValid) {
+              dtFinal = DateTime.fromFormat(valorFechaFinal, "yyyy-MM-dd", { zone: "America/Bogota" });
+            }
+          }
+
+          if (dtFinal && dtFinal.isValid) {
+            row.getCell(colFechaInicio).value = dtFinal.toFormat("dd/MM/yyyy");
+            const dtNuevoFinal = sumarMesClampeando(dtFinal);
+            row.getCell(colFechaFinal).value = dtNuevoFinal.toFormat("dd/MM/yyyy");
+          }
+        }
+
         cambioHecho = true;
       }
     }
