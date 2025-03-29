@@ -41,15 +41,20 @@ client.on("ready", async () => {
     console.log("✅ Bot listo. Programando envíos automáticos...");
   
     // Enviar a las 6:00pm todos los días
-    cron.schedule("36 12 * * *", async () => {
+    cron.schedule("0 18 * * *", async () => {
         //await enviarTodosLosMensajes();
       const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
       const clientes = leerClientes();
+      
       const agrupados = agruparClientesPorNumero(clientes);
   
       for (const numero in agrupados) {
-        if (numero !== "573114207673") continue; // 👈 Solo ese número
+        //if (numero !== "573114207673") continue; // 👈 Solo ese número
         const cliente = agrupados[numero];
+        if (numero === "573114207673") {
+            await enviarMensajeVencimiento(numero, cliente.nombre, cliente.cuentas, "🧪 PRUEBA DIARIA");
+            continue;
+          }
         const cuentas = cliente.cuentas;
         let vencenManana = [];
         let vencenHoy = [];
@@ -285,10 +290,11 @@ function agruparClientesPorNumero(clientes) {
     });
     fs.writeFileSync(path, JSON.stringify(registros, null, 2));
   
-    // Pasamos "" como referencia cuando no hay comprobante aún
+    // 👉 Actualizamos respuesta y estilo (si aplica) en Excel
     await actualizarRespuestaEnExcel(numero, respuestaTexto, fechaActual, "");
     console.log(`📝 Respuesta registrada: ${numero} => ${respuestaTexto}`);
   }
+  
   
   async function actualizarRespuestaEnExcel(numero, respuesta, fecha, referencia = "") {
     const workbook = new ExcelJS.Workbook();
@@ -305,14 +311,16 @@ function agruparClientesPorNumero(clientes) {
         : celNumero.includes(numero);
   
       if (coincide) {
-        row.getCell("K").value = respuesta; // RESPUESTA
-        row.getCell("L").value = fecha;     // FECHA RESPUESTA
+        row.getCell("K").value = respuesta;       // RESPUESTA
+        row.getCell("L").value = fecha;           // FECHA RESPUESTA
   
         if (respuesta.toLowerCase() === "no") {
-          row.getCell("M").value = "XXXXXXXX"; // COMPROBANTE
+          row.getCell("M").value = "XXXXXXXX";     // BLOQUEAR COMPROBANTE
+          row.getCell("A").font = { color: { argb: "FFFF0000" } }; // 🔴 Nombre en rojo
+          console.log(`🔴 Nombre en rojo para ${numero} (respuesta NO)`);
         }
   
-        row.commit(); // Necesario para guardar la fila
+        row.commit();
         await workbook.xlsx.writeFile("C:/Users/JoseRosellon/OneDrive - LOGISTICA FERRETERA/CUENTASEXCEL.xlsx");
         console.log("📗 Respuesta actualizada en Excel:", numero);
         return true;
@@ -322,6 +330,7 @@ function agruparClientesPorNumero(clientes) {
     console.log("⚠️ No se encontró coincidencia para:", numero, referencia);
     return false;
   }
+  
   
   
 
