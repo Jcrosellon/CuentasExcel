@@ -41,7 +41,7 @@ client.on("ready", async () => {
     console.log("✅ Bot listo. Programando envíos automáticos...");
   
     // Enviar a las 6:00pm todos los días
-    cron.schedule("31 12 * * *", async () => {
+    cron.schedule("36 12 * * *", async () => {
         //await enviarTodosLosMensajes();
       const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
       const clientes = leerClientes();
