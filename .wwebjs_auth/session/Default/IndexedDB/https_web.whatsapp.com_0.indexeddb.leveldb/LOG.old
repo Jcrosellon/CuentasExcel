@@ -1,4 +1,19 @@
-2025/03/27-17:32:00.714 13f9c Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/03/27-17:32:00.714 13f9c Recovering log #198
-2025/03/27-17:32:00.754 13f9c Reusing old log C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000198.log 
-2025/03/27-17:32:02.213 170d8 Manual compaction at level-0 from '\x00E\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00F\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/03/29-12:30:24.181 8c1c Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/03/29-12:30:24.182 8c1c Recovering log #334
+2025/03/29-12:30:24.203 8c1c Reusing old log C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000334.log 
+2025/03/29-12:30:25.686 4ba4 Level-0 table #342: started
+2025/03/29-12:30:25.691 4ba4 Level-0 table #342: 134183 bytes OK
+2025/03/29-12:30:25.693 4ba4 Delete type=0 #334
+2025/03/29-12:30:25.694 24d8 Manual compaction at level-0 from '\x00f\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00g\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/03/29-12:30:27.236 761c Compacting 1@1 + 4@2 files
+2025/03/29-12:30:27.340 761c Generated table #343@1: 83303 keys, 2251556 bytes
+2025/03/29-12:30:27.386 761c Generated table #344@1: 16886 keys, 2159591 bytes
+2025/03/29-12:30:27.439 761c Generated table #345@1: 40992 keys, 2184304 bytes
+2025/03/29-12:30:27.456 761c Generated table #346@1: 11724 keys, 241567 bytes
+2025/03/29-12:30:27.456 761c Compacted 1@1 + 4@2 files => 6837018 bytes
+2025/03/29-12:30:27.457 761c compacted to: files[ 0 0 4 0 0 0 0 ]
+2025/03/29-12:30:27.458 761c Delete type=2 #336
+2025/03/29-12:30:27.458 761c Delete type=2 #337
+2025/03/29-12:30:27.458 761c Delete type=2 #338
+2025/03/29-12:30:27.458 761c Delete type=2 #339
+2025/03/29-12:30:27.458 761c Delete type=2 #342
