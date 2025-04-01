@@ -1,3 +1,5 @@
-2025/03/29-12:45:00.663 83dc Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\Session Storage/MANIFEST-000001
-2025/03/29-12:45:00.663 83dc Recovering log #3
-2025/03/29-12:45:00.664 83dc Reusing old log C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\Session Storage/000003.log 
+2025/03/31-21:39:19.521 a903 Reusing MANIFEST /Users/mariapaz/CUESTASEXCEL/CuentasExcel/.wwebjs_auth/session/Default/Session Storage/MANIFEST-000001
+2025/03/31-21:39:19.522 a903 Recovering log #3
+2025/03/31-21:39:19.522 a903 Reusing old log /Users/mariapaz/CUESTASEXCEL/CuentasExcel/.wwebjs_auth/session/Default/Session Storage/000003.log 
+2025/03/31-21:43:59.889 1e40f Level-0 table #5: started
+2025/03/31-21:43:59.940 1e40f Level-0 table #5: 18565 bytes OK
