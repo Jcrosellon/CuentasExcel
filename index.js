@@ -41,8 +41,8 @@ client.on("qr", (qr) => {
 
 // Agrega esto después de definir tu client.on("ready"):
 client.on("ready", async () => {
-    console.log("⏰ Ejecutando tarea CRON de prueba cada minuto");
-  
+  console.log("⏰ Ejecutando tarea CRON de prueba cada minuto");
+
   console.log("✅ Bot listo. Programando envíos automáticos...");
 
   // Enviar a las 6:00pm todos los días
@@ -68,45 +68,45 @@ client.on("ready", async () => {
 
       for (const cuenta of cuentas) {
         let fechaFinal;
-const rawFecha = cuenta.fechaFinal;
+        const rawFecha = cuenta.fechaFinal;
 
-if (typeof rawFecha === "string") {
-  const partes = rawFecha.split("/");
-  const dia = partes[0].padStart(2, "0");
-  const mes = partes[1].padStart(2, "0");
-  const anio = partes[2];
-  const fechaStr = `${dia}/${mes}/${anio}`;
-  fechaFinal = DateTime.fromFormat(fechaStr, "dd/MM/yyyy", { zone: "America/Bogota" });
-} else if (typeof rawFecha === "number") {
-  fechaFinal = DateTime.fromJSDate(new Date(Math.round((rawFecha - 25569 + 1) * 86400 * 1000)))
-  .setZone("America/Bogota")
-  .startOf("day");
+        if (typeof rawFecha === "string") {
+          const partes = rawFecha.split("/");
+          const dia = partes[0].padStart(2, "0");
+          const mes = partes[1].padStart(2, "0");
+          const anio = partes[2];
+          const fechaStr = `${dia}/${mes}/${anio}`;
+          fechaFinal = DateTime.fromFormat(fechaStr, "dd/MM/yyyy", { zone: "America/Bogota" });
+        } else if (typeof rawFecha === "number") {
+          fechaFinal = DateTime.fromJSDate(new Date(Math.round((rawFecha - 25569 + 1) * 86400 * 1000)))
+            .setZone("America/Bogota")
+            .startOf("day");
 
-} else if (rawFecha instanceof Date) {
-  fechaFinal = DateTime.fromJSDate(rawFecha).setZone("America/Bogota");
-} else {
-  fechaFinal = null;
-}
+        } else if (rawFecha instanceof Date) {
+          fechaFinal = DateTime.fromJSDate(rawFecha).setZone("America/Bogota");
+        } else {
+          fechaFinal = null;
+        }
 
-if (!fechaFinal || !fechaFinal.isValid) continue;
+        if (!fechaFinal || !fechaFinal.isValid) continue;
 
-// ✅ Compara solo fechas (sin horas)
-const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
-const finalDia = fechaFinal.startOf("day");
+        // ✅ Compara solo fechas (sin horas)
+        const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
+        const finalDia = fechaFinal.startOf("day");
 
-// ✅ Esto garantiza que el diff sea exacto (0, 1 o negativo)
-const diff = finalDia.diff(hoy, "days").days;
+        // ✅ Esto garantiza que el diff sea exacto (0, 1 o negativo)
+        const diff = finalDia.diff(hoy, "days").days;
 
-console.log(`[DEBUG FECHA] Cliente: ${cliente.nombre}, Excel: ${rawFecha}, Parseada: ${finalDia.toISODate()}, Hoy: ${hoy.toISODate()}, Diff: ${diff}`);
+        console.log(`[DEBUG FECHA] Cliente: ${cliente.nombre}, Excel: ${rawFecha}, Parseada: ${finalDia.toISODate()}, Hoy: ${hoy.toISODate()}, Diff: ${diff}`);
 
-if (diff === 1) {
-  vencenManana.push(cuenta);
-} else if (diff === 0) {
-  vencenHoy.push(cuenta);
-} else if (diff < 0) {
-  console.log(`📆 Servicio en mora para ${cliente.nombre}: ${cuenta.cuenta} (${diff} días)`);
-  enMora.push({ ...cuenta, dias: Math.abs(Math.round(diff)) });
-}
+        if (diff === 1) {
+          vencenManana.push(cuenta);
+        } else if (diff === 0) {
+          vencenHoy.push(cuenta);
+        } else if (diff < 0) {
+          console.log(`📆 Servicio en mora para ${cliente.nombre}: ${cuenta.cuenta} (${diff} días)`);
+          enMora.push({ ...cuenta, dias: Math.abs(Math.round(diff)) });
+        }
 
 
       }
@@ -125,7 +125,7 @@ if (diff === 1) {
       }
     }
   });
-  
+
 
   // ⚡ Enviar al instante solo para pruebas (comenta esto en producción)
   await enviarTodosLosMensajes();
@@ -157,7 +157,56 @@ client.on("message", async (msg) => {
       console.log("🧼 Admin limpió todos los pendientes.");
       return;
     }
-    
+
+
+    if (texto === "analizar último") {
+      const pendientes = fs.existsSync(rutaPendientes)
+        ? JSON.parse(fs.readFileSync(rutaPendientes))
+        : [];
+
+      if (pendientes.length === 0) {
+        await client.sendMessage(adminPhone, "⚠️ No hay pendientes guardados para analizar.");
+        return;
+      }
+
+      const ultimo = pendientes[pendientes.length - 1];
+
+      if (!ultimo.imagen || !fs.existsSync(ultimo.imagen)) {
+        await client.sendMessage(adminPhone, "⚠️ No se encontró la imagen del último pendiente.");
+        return;
+      }
+
+      await client.sendMessage(adminPhone, "🔁 Reanalizando el último pantallazo...");
+
+      try {
+        const clientes = await leerClientes();
+        const clienteRelacionado = clientes.find(c =>
+          (c["NUMERO WHATSAPP"]?.toString() || "").includes(ultimo.numero)
+        );
+
+        const valorEsperado = clienteRelacionado
+          ? clienteRelacionado["VALOR"]?.toString().replace(/\./g, "")
+          : "20000";
+
+        const resultado = await validarComprobante(ultimo.imagen, valorEsperado);
+
+
+        if (!resultado.valido) {
+          await client.sendMessage(adminPhone, "❌ OCR no logró validar el comprobante nuevamente.");
+          return;
+        }
+
+        await client.sendMessage(adminPhone, `🧾 Referencia: ${resultado.referenciaDetectada}\n💵 Valor: ${resultado.valorDetectado}`);
+        await client.sendMessage(adminPhone, new MessageMedia("image/jpeg", fs.readFileSync(ultimo.imagen).toString("base64")), {
+          caption: "🖼 Comprobante reanalizado",
+        });
+      } catch (err) {
+        console.error("❌ Error reanalizando pantallazo:", err);
+        await client.sendMessage(adminPhone, "❌ Hubo un error al analizar el pantallazo.");
+      }
+    }
+
+
 
     if (pendiente) {
       const clientes = await leerClientes();
@@ -172,7 +221,7 @@ client.on("message", async (msg) => {
         await client.sendMessage(pendiente.numero + "@c.us", mensajeConfirmacion);
         await client.sendMessage(adminPhone, `✅ Confirmaste el pago con referencia: *${pendiente.referencia}*`);
       }
-       else if (texto === "rechazado" || texto === "❌") {
+      else if (texto === "rechazado" || texto === "❌") {
         await client.sendMessage(pendiente.numero + "@c.us", "❌ Tu pago fue rechazado. Verifica que el pantallazo sea correcto y vuelve a intentarlo.");
         await client.sendMessage(adminPhone, `❌ Rechazaste el pago con referencia: *${pendiente.referencia}*`);
       }
@@ -192,7 +241,7 @@ client.on("message", async (msg) => {
     if (!["image/jpeg", "image/png"].includes(media.mimetype)) {
       const cliente = cuentasUsuario[0];
       await guardarRespuesta(numero, cliente, "NO RECONOCIDO", fechaActual);
-  
+
       let historial = {};
       if (fs.existsSync(rutaMensajesEnviados)) {
         try {
@@ -203,7 +252,7 @@ client.on("message", async (msg) => {
           historial = {};
         }
       }
-  
+
       const mensajeAnterior = historial[numero];
       if (mensajeAnterior) {
         await client.sendMessage(numero + "@c.us", mensajeAnterior);
@@ -211,73 +260,73 @@ client.on("message", async (msg) => {
       } else {
         console.warn(`⚠️ No se encontró mensaje anterior para ${numero}`);
       }
-  
+
       console.log(`⚠️ Tipo de archivo no admitido de ${numero}: ${media.mimetype}`);
       return;
     }
-  
+
     msg.reply("📸 Recibimos tu comprobante. *Validando...*");
     const ext = media.mimetype === "image/png" ? "png" : "jpg";
     const tempPath = `./temp-${numero}.${ext}`;
     const buffer = Buffer.from(media.data, "base64");
     await writeFile(tempPath, buffer);
-  
+
     const clienteData = cuentasUsuario[0];
     const valorEsperado = clienteData["VALOR"]?.toString().replace(/\./g, "") || "20000";
-  
+
     let resultado;
     try {
       resultado = await validarComprobante(tempPath, valorEsperado);
-    
+
       const valorEsperadoNum = parseFloat(valorEsperado);
       const valorDetectado = resultado.valorDetectado || 0;
-    
+
       console.log("🔍 Comparando valores: Detectado =", valorDetectado, "Esperado =", valorEsperadoNum);
-    
+
       if (valorDetectado === 0 || isNaN(valorDetectado)) {
         await msg.reply("⚠️ No pudimos detectar un valor de pago en el comprobante. Asegúrate de que el monto esté visible.");
-        await fs.promises.unlink(tempPath).catch(() => {});
+        await fs.promises.unlink(tempPath).catch(() => { });
         return;
       }
-    
+
       if (valorDetectado < valorEsperadoNum) {
         await msg.reply(`❌ Pago rechazado, Recuerda que tu pago es: *${formatearPesosColombianos(valorEsperadoNum)}*.`);
         console.log(`🚫 Comprobante rechazado automáticamente: valor insuficiente.`);
-        await fs.promises.unlink(tempPath).catch(() => {});
+        await fs.promises.unlink(tempPath).catch(() => { });
         return;
       }
     } catch (err) {
       console.error("❌ Error durante OCR:", err);
       await msg.reply("⚠️ No pudimos leer la imagen. Asegúrate que el pantallazo esté claro y vuelve a intentarlo.");
-      await fs.promises.unlink(tempPath).catch(() => {});
+      await fs.promises.unlink(tempPath).catch(() => { });
       return;
     }
-    
-    
-  
-    await fs.promises.unlink(tempPath).catch(() => {});
-  
+
+
+
+    await fs.promises.unlink(tempPath).catch(() => { });
+
     if (!resultado.valido) {
       msg.reply("⚠️ No pudimos validar tu comprobante. Asegúrate que el pantallazo esté claro y vuelve a intentarlo.");
       return;
     }
-  
+
     const nuevaReferencia = (resultado.referenciaDetectada || "").trim();
     let pendientes = fs.existsSync(rutaPendientes) ? JSON.parse(fs.readFileSync(rutaPendientes)) : [];
     if (pendientes.some(p => p.referencia === nuevaReferencia)) {
       msg.reply(`❌ Este comprobante no es valido (Ref: ${nuevaReferencia}).\nPago rechazado.`);
       return;
     }
-  
+
     const mensajeAdmin = `🧾 *Pago recibido de ${clienteData["NOMBRE"]}*\n` +
       `🧩 Referencia: ${nuevaReferencia}\n` +
       `📌 Cuenta: ${clienteData["CUENTA"]} (usuario: ${clienteData["USUARIO"]})\n\n` +
       `✅ Para *confirmar* este pago responde: *CONFIRMADO* o ✅\n❌ Para *rechazarlo* responde: *RECHAZADO* o ❌`;
-  
+
     await client.sendMessage(adminPhone, mensajeAdmin);
     await client.sendMessage(adminPhone, media, { caption: "🖼 Comprobante adjunto" });
     msg.reply("🕓 Comprobante enviado para validación. Te notificaremos pronto. 🙌");
-  
+
     pendientes.push({
       numero,
       referencia: nuevaReferencia,
@@ -288,10 +337,10 @@ client.on("message", async (msg) => {
     });
     fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
     console.log("📩 Pendiente agregado para revisión:", nuevaReferencia);
-  
+
     return;
   }
-  
+
 
   if (["si", "sí", "✅ si"].includes(texto)) {
     msg.reply("👍 ¡Perfecto! Para continuar, realiza el pago a *Nequi o DaviPlata: 3183192913* y adjunta el pantallazo por aquí. Yo me encargaré de validarlo. 🧐📲");
@@ -577,6 +626,8 @@ function generarResumenEstado(resumen) {
 
 
 
+
+
 async function enviarTodosLosMensajes() {
   const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
   const clientes = await leerClientes();
@@ -593,45 +644,46 @@ async function enviarTodosLosMensajes() {
 
     for (const cuenta of cuentas) {
       let fechaFinal;
-const rawFecha = cuenta.fechaFinal;
+      const rawFecha = cuenta.fechaFinal;
 
-if (typeof rawFecha === "string") {
-  const partes = rawFecha.split("/");
-  const dia = partes[0].padStart(2, "0");
-  const mes = partes[1].padStart(2, "0");
-  const anio = partes[2];
-  const fechaStr = `${dia}/${mes}/${anio}`;
-  fechaFinal = DateTime.fromFormat(fechaStr, "dd/MM/yyyy", { zone: "America/Bogota" });
-} else if (typeof rawFecha === "number") {
-  fechaFinal = DateTime.fromJSDate(new Date(Math.round((rawFecha - 25569 + 1) * 86400 * 1000)))
-  .setZone("America/Bogota")
-  .startOf("day");
+      if (typeof rawFecha === "string") {
+        const partes = rawFecha.split("/");
+        const dia = partes[0].padStart(2, "0");
+        const mes = partes[1].padStart(2, "0");
+        const anio = partes[2];
+        const fechaStr = `${dia}/${mes}/${anio}`;
+        fechaFinal = DateTime.fromFormat(fechaStr, "dd/MM/yyyy", { zone: "America/Bogota" });
+      } else if (typeof rawFecha === "number") {
+        fechaFinal = DateTime.fromJSDate(new Date(Math.round((rawFecha - 25569 + 1) * 86400 * 1000)))
+          .setZone("America/Bogota")
+          .startOf("day");
 
-} else if (rawFecha instanceof Date) {
-  fechaFinal = DateTime.fromJSDate(rawFecha).setZone("America/Bogota");
-} else {
-  fechaFinal = null;
-}
+      } else if (rawFecha instanceof Date) {
+        fechaFinal = DateTime.fromJSDate(rawFecha).setZone("America/Bogota");
+      } else {
+        fechaFinal = null;
+      }
 
-if (!fechaFinal || !fechaFinal.isValid) continue;
+      if (!fechaFinal || !fechaFinal.isValid) continue;
 
-// ✅ Compara solo fechas (sin horas)
-const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
-const finalDia = fechaFinal.startOf("day");
+      // ✅ Compara solo fechas (sin horas)
+      const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
+      const finalDia = fechaFinal.startOf("day");
 
-// ✅ Esto garantiza que el diff sea exacto (0, 1 o negativo)
-const diff = finalDia.diff(hoy, "days").days;
+      // ✅ Esto garantiza que el diff sea exacto (0, 1 o negativo)
+      const diff = finalDia.diff(hoy, "days").days;
 
-console.log(`[DEBUG FECHA] Cliente: ${cliente.nombre}, Excel: ${rawFecha}, Parseada: ${finalDia.toISODate()}, Hoy: ${hoy.toISODate()}, Diff: ${diff}`);
+      console.log(`[DEBUG FECHA] Cliente: ${cliente.nombre}, Excel: ${rawFecha}, Parseada: ${finalDia.toISODate()}, Hoy: ${hoy.toISODate()}, Diff: ${diff}`);
 
-if (diff ===  1) {
-  vencenManana.push(cuenta);
-} else if (diff === 0) {
-  vencenHoy.push(cuenta);
-} else if (diff < 0) {
-  console.log(`📆 Servicio en mora para ${cliente.nombre}: ${cuenta.cuenta} (${diff} días)`);
-  enMora.push({ ...cuenta, dias: Math.abs(Math.round(diff)) });
-}}
+      if (diff === 1) {
+        vencenManana.push(cuenta);
+      } else if (diff === 0) {
+        vencenHoy.push(cuenta);
+      } else if (diff < 0) {
+        console.log(`📆 Servicio en mora para ${cliente.nombre}: ${cuenta.cuenta} (${diff} días)`);
+        enMora.push({ ...cuenta, dias: Math.abs(Math.round(diff)) });
+      }
+    }
 
 
     if (vencenManana.length > 0) {
