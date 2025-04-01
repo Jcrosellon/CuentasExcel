@@ -1,6 +1,45 @@
-// ocrValidator.js
 const Tesseract = require("tesseract.js");
-const { DateTime } = require("luxon");
+
+// ✅ Convierte "$40.000,00" o "40,000.00" en 40000
+function convertirValor(valorStr) {
+  if (!valorStr) return 0;
+  valorStr = valorStr.trim().replace(/[^\d.,]/g, "");
+
+  const formatoUS = /^\d{1,3}(,\d{3})*(\.\d{2})?$/;
+  if (formatoUS.test(valorStr)) {
+    valorStr = valorStr.replace(/,/g, "");
+  } else {
+    valorStr = valorStr.replace(/\.(?=\d{3})/g, "").replace(",", ".");
+  }
+
+  const num = parseFloat(valorStr);
+  return isNaN(num) ? 0 : Math.round(num);
+}
+
+// 🔍 Detecta si el número o el nombre está presente
+function contieneNumeroDestino(texto, numeroEsperado = "3183192913") {
+  const limpio = texto.replace(/\s+/g, '').toLowerCase();
+
+  const patronesNumeros = [
+    /3\s*1\s*8\s*3\s*1\s*9\s*2\s*9\s*1\s*3/,
+    /318\s*319\s*2913/,
+    /31\s*83\s*19\s*29\s*13/,
+    /s185192013/, // error típico
+  ];
+
+  const patronesNombre = [
+    "jose carlos rosellon",     // nombre completo
+    "rosellon lozano",          // apellido completo
+    "rosellon l",               // ofuscado
+    "jc rosellon",              // iniciales
+    "jose c rosellon",          // común
+  ];
+
+  const coincideNumero = patronesNumeros.some(r => r.test(limpio));
+  const coincideNombre = patronesNombre.some(n => limpio.includes(n.replace(/\s+/g, '')));
+
+  return coincideNumero || coincideNombre;
+}
 
 const validarComprobante = async (rutaImagen, valorMinimo = 20000) => {
   console.log("🔍 Analizando imagen con OCR...");
@@ -12,36 +51,39 @@ const validarComprobante = async (rutaImagen, valorMinimo = 20000) => {
   const textoPlano = text.toLowerCase();
   console.log("📝 Texto detectado:", textoPlano);
 
-  // 1) Detectar valor
-  const valoresDetectados = [...textoPlano.matchAll(/\$?\s?([\d.,]+)/g)].map(match => {
-    const v = match[1].replace(/\./g, "").replace(",", ".");
-    return parseFloat(v);
-  });
-  const valorValido = valoresDetectados.some(v => v >= parseFloat(valorMinimo));
+  const posiblesValores = [...textoPlano.matchAll(/\$\s?([\d.,]+)/g)]
+    .map(match => convertirValor(match[1]))
+    .filter(v => v > 0 && v < 1000000);
 
-  // 2) Numero de destino (Si quieres mantenerlo obligatorio)
-  const numeroValido = /3183192913/.test(textoPlano);
+  const valorDetectado = Math.max(...posiblesValores, 0);
+  console.log("💵 Valores detectados:", posiblesValores);
+  console.log("💵 Valor detectado específicamente:", valorDetectado);
 
-  // 3) Buscar la palabra "referencia" y capturar lo que venga después.
-  //    Por ejemplo, si Tesseract lee algo como: "Referencia M7934504"
-  //    este regex busca la palabra "referencia" seguida de espacio o dos puntos, y captura lo siguiente hasta el salto de linea o espacio.
-  const refRegex = /referencia[:\s]+([a-z0-9\-]+)/i;
-  // Asegúrate de que Tesseract reconozca la línea como "referencia m7934504".
-  // [a-z0-9\-]+ -> Capturará algo como "M7934504" (en minúsculas, pues pasamos toLowerCase).
-  // Si en tu imagen sale con mayúsculas, no importa, .toLowerCase() uniformiza.
-
-  let referenciaDetectada = "";
-  const refMatch = textoPlano.match(refRegex);
-  if (refMatch) {
-    referenciaDetectada = refMatch[1].trim();
+  const valorValido = valorDetectado >= parseFloat(valorMinimo);
+  if (!valorValido) {
+    console.warn("⚠️ Valor detectado es insuficiente:", valorDetectado);
   }
 
-  
+  const numeroValido = contieneNumeroDestino(textoPlano);
+  if (!numeroValido) {
+    console.warn("⚠️ No se encontró número ni nombre esperado.");
+  }
+
+  let referenciaDetectada = "";
+  const refMatch = textoPlano.match(/(referencia|aprobaci[oó]n|comprobante)[:\s#]+([a-z0-9\-]+)/i);
+  if (refMatch) {
+    referenciaDetectada = refMatch[2]?.trim() || "";
+  } else {
+    const posiblesRefs = textoPlano.match(/\b\d{5,}\b/g);
+    if (posiblesRefs && posiblesRefs.length > 0) {
+      referenciaDetectada = posiblesRefs[posiblesRefs.length - 1];
+    }
+  }
+
+  referenciaDetectada = referenciaDetectada.replace(/\s+/g, '');
+  const valido = valorValido && numeroValido && !!referenciaDetectada;
 
   console.log("🔎 valorValido:", valorValido, "numeroValido:", numeroValido, "referencia:", referenciaDetectada);
-
-  // 4) Decide qué es obligatorio
-  const valido = valorValido && numeroValido && !!referenciaDetectada;
 
   return {
     valido,
@@ -50,6 +92,7 @@ const validarComprobante = async (rutaImagen, valorMinimo = 20000) => {
       numero: numeroValido,
       referencia: !!referenciaDetectada
     },
+    valorDetectado,
     referenciaDetectada
   };
 };

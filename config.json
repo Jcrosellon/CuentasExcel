@@ -1,5 +1,8 @@
 {
-  "excelPath": "C:/Users/JoseRosellon/OneDrive - LOGISTICA FERRETERA/CUENTASEXCEL.xlsx",
+  "excelPath": "",
   "hojaExcel": "Hoja1",
-  "adminPhone": "573183192913"
+  "adminPhone": "573183192913",
+  "useGoogleSheet": true,
+  "googleSheetId": "1ABnw9ylgWkjosHLRyaPsgvfNlQD2PobmMzpW5PBR764"
+  
 }

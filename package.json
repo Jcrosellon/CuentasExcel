@@ -11,6 +11,8 @@
   "description": "",
   "dependencies": {
     "exceljs": "^4.4.0",
+    "google-auth-library": "^9.15.1",
+    "googleapis": "^148.0.0",
     "luxon": "^3.6.0",
     "node-cron": "^3.0.3",
     "qrcode-terminal": "^0.12.0",

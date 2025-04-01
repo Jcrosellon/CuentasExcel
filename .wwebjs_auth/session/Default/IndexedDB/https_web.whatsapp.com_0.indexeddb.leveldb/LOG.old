@@ -1,0 +1,19 @@
+2025/04/01-13:24:22.623 c718 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/01-13:24:22.627 c718 Recovering log #186
+2025/04/01-13:24:22.662 c718 Reusing old log C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000186.log 
+2025/04/01-13:24:24.217 8910 Level-0 table #194: started
+2025/04/01-13:24:24.231 8910 Level-0 table #194: 236622 bytes OK
+2025/04/01-13:24:24.233 8910 Delete type=0 #186
+2025/04/01-13:24:24.233 8910 Manual compaction at level-0 from '\x00=\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00>\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/01-13:24:25.765 c58c Compacting 1@1 + 4@2 files
+2025/04/01-13:24:25.846 c58c Generated table #195@1: 58987 keys, 2224639 bytes
+2025/04/01-13:24:25.876 c58c Generated table #196@1: 4309 keys, 2139094 bytes
+2025/04/01-13:24:25.961 c58c Generated table #197@1: 71747 keys, 2223383 bytes
+2025/04/01-13:24:25.982 c58c Generated table #198@1: 18209 keys, 371163 bytes
+2025/04/01-13:24:25.982 c58c Compacted 1@1 + 4@2 files => 6958279 bytes
+2025/04/01-13:24:25.983 c58c compacted to: files[ 0 0 4 0 0 0 0 ]
+2025/04/01-13:24:25.983 c58c Delete type=2 #188
+2025/04/01-13:24:25.983 c58c Delete type=2 #189
+2025/04/01-13:24:25.983 c58c Delete type=2 #190
+2025/04/01-13:24:25.983 c58c Delete type=2 #191
+2025/04/01-13:24:25.983 c58c Delete type=2 #194
