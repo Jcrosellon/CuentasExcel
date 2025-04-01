@@ -5,7 +5,6 @@ const config = require("./config.json");
 const fs = require("fs");
 const path = require("path");
 
-// Validación de config y credenciales
 const CREDENTIALS_PATH = path.join(__dirname, "credentials.json");
 if (!fs.existsSync(CREDENTIALS_PATH)) {
   console.error("❌ ERROR: No se encontró el archivo credentials.json");
@@ -96,48 +95,42 @@ async function actualizarComprobanteGoogleSheet(numero, nuevaRef) {
     const rows = res.data.values || [];
     const numeroLimpio = numero.replace(/\D/g, "");
     let rowIndex = -1;
+    let fechaFinalOriginal = null;
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      const celdaNumero = (row[10] || "").replace(/\D/g, ""); // Columna K
-      console.log(`🔍 [Fila ${i + 2}] Comparando: hoja=${celdaNumero}, buscado=${numeroLimpio}`);
-      if (celdaNumero.includes(numeroLimpio)) {
-        console.log(`✅ Coincidencia encontrada en fila ${i + 2}`);
+      const posibleNumero = (row[10] || "").replace(/\D/g, "");
+      if (posibleNumero && posibleNumero.includes(numeroLimpio)) {
         rowIndex = i + 2;
+        fechaFinalOriginal = row[3];
         break;
       }
     }
 
-    if (rowIndex === -1) {
+    if (rowIndex === -1 || !fechaFinalOriginal) {
       console.warn("⚠️ No se encontró fila para actualizar comprobante (Google):", numeroLimpio);
       return false;
     }
 
-    const today = DateTime.now().setZone("America/Bogota");
-    const nuevaFinal = today.plus({ months: 1 });
+    const fechaInicio = DateTime.fromFormat(fechaFinalOriginal, "d/M/yyyy", { zone: "America/Bogota" });
+    const nuevaFechaFinal = sumarMesClampeando(fechaInicio);
 
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: sheetId,
       requestBody: {
         data: [
           {
-            range: `${hoja}!C${rowIndex}:D${rowIndex}`, // FECHA INICIO y FECHA FINAL
-            values: [[today.toFormat("dd/MM/yyyy"), nuevaFinal.toFormat("dd/MM/yyyy")]],
+            range: `${hoja}!C${rowIndex}:D${rowIndex}`,
+            values: [[fechaInicio.toFormat("dd/MM/yyyy"), nuevaFechaFinal.toFormat("dd/MM/yyyy")]],
           },
           {
-            range: `${hoja}!N${rowIndex}:N${rowIndex}`, // COMPROBANTE
-            values: [[nuevaRef]],
-          },
-          {
-            range: `${hoja}!L${rowIndex}:M${rowIndex}`, // RESPUESTA y FECHA RESPUESTA
-            values: [["✅ Comprobante", today.toFormat("dd/MM/yyyy")]],
+            range: `${hoja}!L${rowIndex}:N${rowIndex}`,
+            values: [["✅ Comprobante", DateTime.now().toFormat("dd/MM/yyyy"), nuevaRef]],
           }
         ],
-        valueInputOption: "USER_ENTERED"
-      }
+        valueInputOption: "USER_ENTERED",
+      },
     });
-    
-        
 
     console.log(`🟢 Comprobante actualizado en Google Sheets. Fila ${rowIndex}, Ref: ${nuevaRef}`);
     return true;
@@ -146,7 +139,6 @@ async function actualizarComprobanteGoogleSheet(numero, nuevaRef) {
     return false;
   }
 }
-
 
 function sumarMesClampeando(dtOriginal) {
   let newMonth = dtOriginal.month + 1;
@@ -180,10 +172,12 @@ async function actualizarComprobanteExcelLocal(numero, nuevaRef) {
     if (i === 1) return;
     const celdaNumero = row.getCell(colNumero).value?.toString() || "";
     if (celdaNumero.includes(numero)) {
+      const fechaFinalRaw = row.getCell(colFechaFinal).value;
+      const fechaInicio = DateTime.fromFormat(fechaFinalRaw.toString(), "d/M/yyyy", { zone: "America/Bogota" });
+      const nuevaFinal = sumarMesClampeando(fechaInicio);
+      row.getCell(colFechaInicio).value = fechaInicio.toFormat("dd/MM/yyyy");
+      row.getCell(colFechaFinal).value = nuevaFinal.toFormat("dd/MM/yyyy");
       row.getCell(colComprobante).value = nuevaRef;
-      const hoy = DateTime.now().setZone("America/Bogota");
-      row.getCell(colFechaInicio).value = hoy.toFormat("dd/MM/yyyy");
-      row.getCell(colFechaFinal).value = hoy.plus({ months: 1 }).toFormat("dd/MM/yyyy");
       cambio = true;
     }
   });

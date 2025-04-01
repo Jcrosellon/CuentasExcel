@@ -63,38 +63,62 @@ async function leerClientesGoogle() {
 async function actualizarRespuestaEnGoogle(numero, respuesta, fecha, referencia = "") {
   try {
     const sheets = await getSheet();
-    const clientes = await leerClientesGoogle();
+    const sheetId = config.googleSheetId;
+    const hoja = config.hojaExcel;
 
-    const index = clientes.findIndex(row => {
-      const celNum = (row["NUMERO WHATSAPP"] || row["NÚMERO WHATSAPP"] || "").replace(/\D/g, "");
-      const ref = (row["REFERENCIA"] || "").trim();
-      return referencia
-        ? celNum.includes(numero) && ref === referencia
-        : celNum.includes(numero);
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: sheetId,
+      range: `${hoja}!A2:N`,
     });
 
-    if (index === -1) {
+    const rows = res.data.values || [];
+    const numeroLimpio = numero.replace(/\D/g, "");
+    let rowIndex = -1;
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const celdaNumero = (row[10] || "").replace(/\D/g, ""); // Columna K
+      if (celdaNumero.includes(numeroLimpio)) {
+        rowIndex = i + 2; // Ajustamos por cabecera
+        break;
+      }
+    }
+
+    if (rowIndex === -1) {
       console.warn("⚠️ No se encontró fila para actualizar respuesta en Google Sheets:", numero);
       return false;
     }
 
-    const fila = index + 2;
-    const values = [[respuesta, fecha, referencia]];
-
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: SPREADSHEET_ID,
-      range: `${config.hojaExcel}!K${fila}:M${fila}`,
-      valueInputOption: "USER_ENTERED",
-      requestBody: { values },
+    await sheets.spreadsheets.values.batchUpdate({
+      spreadsheetId: sheetId,
+      requestBody: {
+        data: [
+          {
+            range: `${hoja}!L${rowIndex}`, // RESPUESTA
+            values: [[respuesta]],
+          },
+          {
+            range: `${hoja}!M${rowIndex}`, // FECHA RESPUESTA
+            values: [[fecha]],
+          },
+          {
+            range: `${hoja}!N${rowIndex}`, // COMPROBANTE o REFERENCIA
+            values: [[referencia]],
+          }
+        ],
+        valueInputOption: "USER_ENTERED",
+      },
     });
 
-    console.log(`✅ Respuesta actualizada en Google Sheets (fila ${fila})`);
+    console.log(`✅ Respuesta actualizada en Google Sheets (fila ${rowIndex})`);
     return true;
   } catch (error) {
     console.error("❌ Error actualizando respuesta en Google Sheets:", error.message);
     return false;
   }
 }
+
+
 
 module.exports = {
   leerClientesGoogle,
