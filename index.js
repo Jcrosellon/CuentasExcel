@@ -163,8 +163,10 @@ client.on("message", async (msg) => {
         await actualizarRespuestaEnExcel(cliente["NUMERO WHATSAPP"], "✅ Comprobante", DateTime.now().toISODate(), pendiente.referencia);
       }
       if (texto === "confirmado" || texto === "✅") {
-        await client.sendMessage(pendiente.numero + "@c.us", "✅ Tu pago ha sido confirmado. ¡Gracias por continuar con nosotros! 🎉");
-      } else if (texto === "rechazado" || texto === "❌") {
+        const mensajeConfirmacion = `✅ Tu pago ha sido confirmado. Ref: *${pendiente.referencia}*. ¡Gracias por continuar con nosotros! 🎉`;
+        await client.sendMessage(pendiente.numero + "@c.us", mensajeConfirmacion);
+      }
+       else if (texto === "rechazado" || texto === "❌") {
         await client.sendMessage(pendiente.numero + "@c.us", "❌ Tu pago fue rechazado. Verifica que el pantallazo sea correcto y vuelve a intentarlo.");
       }
     } else {
@@ -340,7 +342,7 @@ function formatearPesosColombianos(valor) {
 
 async function enviarMensajeVencimiento(numero, nombre, cuentas, cuando) {
   console.log(`📨 [${cuando}] Enviando mensaje a ${numero}: ${cuentas.map(c => c.cuenta).join(", ")}`);
-  let mensaje = `🌙 Buenas tardes ${nombre}, para recordarte que ${cuando} se vencen los siguientes servicios:\n\n`;
+  let mensaje = `🌙 Buenas tardes ${nombre}, RoussillonTechnology te recuerda que ${cuando} se vencen los siguientes servicios:\n\n`;
   let total = 0;
   for (const cuenta of cuentas) {
     mensaje += `🔸 ${cuenta.cuenta} ( ${cuenta.dispositivo} ): $${formatearPesosColombianos(cuenta.valor)}\n`;
@@ -373,7 +375,7 @@ async function enviarMensajeVencimiento(numero, nombre, cuentas, cuando) {
 
 
 async function enviarMensajeMora(numero, nombre, cuenta) {
-  const mensaje = `📢 Hola ${nombre}, recuerda que tus servicios:\n\n` +
+  const mensaje = `📢 Hola ${nombre}, RoussillonTechnology te recuerda que tus servicios:\n\n` +
     `😱 ¡TIENEN ${cuenta.dias} DÍA${cuenta.dias > 1 ? "S" : ""} EN MORA!\n\n` +
     `🔸 ${cuenta.cuenta} ( ${cuenta.dispositivo} ): $${formatearPesosColombianos(cuenta.valor)}\n\n` +
     `💰 Total a pagar: $${formatearPesosColombianos(cuenta.valor)}\n\n` +
