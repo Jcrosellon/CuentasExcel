@@ -1,13 +1,13 @@
 // index.js
 const qrcode = require("qrcode-terminal");
-const { Client, LocalAuth } = require("whatsapp-web.js");
+const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
 const { DateTime } = require("luxon");
 const fs = require("fs");
 const { writeFile } = require("fs/promises");
 const ExcelJS = require("exceljs");
 const cron = require("node-cron");
 
-const config = require("./configLoader")(); // ✅ Cargar config una vez
+const config = require("./configLoader")();
 const { leerClientes } = require("./utils");
 const { validarComprobante } = require("./ocrValidator");
 const { actualizarComprobanteFila } = require("./guardarRespuestas");
@@ -16,9 +16,7 @@ const adminPhone = config.adminPhone + "@c.us";
 const path = "./respuestas.json";
 const rutaPendientes = "./pendientes.json";
 const rutaMensajesEnviados = "./mensajesEnviados.json";
-
-
-
+const { yaFueConfirmado, marcarRespondido, yaRespondido } = require("./postPagoManager");
 
 const perfilMaximos = {
   "NETFLIX": 5,
@@ -29,9 +27,50 @@ const perfilMaximos = {
   "IPTV": 3,
 };
 
+async function logError(mensaje, err = null, rutaImagen = null) {
+  const timestamp = DateTime.now().setZone("America/Bogota").toISO();
+  let texto = `🕓 ${timestamp} - ${mensaje}`;
+  if (err) {
+    texto += `\n🛠️ Detalles: ${err.stack || err.message || err}`;
+  }
+  texto += "\n\n";
+  fs.appendFileSync("errores.txt", texto);
+
+  try {
+    if (client && client.info && client.info.wid && adminPhone) {
+      const resumen = mensaje.length > 300 ? mensaje.slice(0, 300) + "..." : mensaje;
+      await client.sendMessage(adminPhone, `⚠️ *Error detectado:*
+${resumen}`);
+
+      if (rutaImagen && fs.existsSync(rutaImagen)) {
+        const media = new MessageMedia("image/jpeg", fs.readFileSync(rutaImagen, "base64"));
+        await client.sendMessage(adminPhone, media, { caption: "📎 Último pantallazo vinculado al error." });
+      }
+    }
+  } catch (notifyErr) {
+    console.error("❌ No se pudo notificar al admin sobre el error:", notifyErr.message);
+  }
+}
+
+process.on("uncaughtException", (err) => {
+  logError("❌ Excepción no capturada (uncaughtException)", err);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  logError("❌ Promesa no manejada (unhandledRejection)", reason);
+});
+
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: { headless: true },
+});
+
+client.on("auth_failure", (msg) => {
+  logError("❌ Fallo de autenticación con WhatsApp", msg);
+});
+
+client.on("disconnected", (reason) => {
+  logError("🔌 Bot desconectado de WhatsApp", reason);
 });
 
 client.on("qr", (qr) => {
@@ -39,96 +78,82 @@ client.on("qr", (qr) => {
   console.log("📲 Escanea el código QR con tu WhatsApp");
 });
 
-// Agrega esto después de definir tu client.on("ready"):
 client.on("ready", async () => {
-  console.log("⏰ Ejecutando tarea CRON de prueba cada minuto");
-
   console.log("✅ Bot listo. Programando envíos automáticos...");
 
-  // Enviar a las 6:00pm todos los días
   cron.schedule("0 18 * * *", async () => {
-    const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
-    const clientes = await leerClientes();
+    try {
+      const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
+      const clientes = await leerClientes();
+      const agrupados = agruparClientesPorNumero(clientes);
 
-
-
-    const agrupados = agruparClientesPorNumero(clientes);
-
-    for (const numero in agrupados) {
-      if (numero !== "573114207673") continue; // 👈 Solo ese número
-      const cliente = agrupados[numero];
-      // if (numero === "573114207673") {
-      //     await enviarMensajeVencimiento(numero, cliente.nombre, cliente.cuentas, "🧪 PRUEBA DIARIA");
-      //     continue;
-      //   }
-      const cuentas = cliente.cuentas;
-      let vencenManana = [];
-      let vencenHoy = [];
-      let enMora = [];
-
-      for (const cuenta of cuentas) {
-        let fechaFinal;
-        const rawFecha = cuenta.fechaFinal;
-
-        if (typeof rawFecha === "string") {
-          const partes = rawFecha.split("/");
-          const dia = partes[0].padStart(2, "0");
-          const mes = partes[1].padStart(2, "0");
-          const anio = partes[2];
-          const fechaStr = `${dia}/${mes}/${anio}`;
-          fechaFinal = DateTime.fromFormat(fechaStr, "dd/MM/yyyy", { zone: "America/Bogota" });
-        } else if (typeof rawFecha === "number") {
-          fechaFinal = DateTime.fromJSDate(new Date(Math.round((rawFecha - 25569 + 1) * 86400 * 1000)))
-            .setZone("America/Bogota")
-            .startOf("day");
-
-        } else if (rawFecha instanceof Date) {
-          fechaFinal = DateTime.fromJSDate(rawFecha).setZone("America/Bogota");
-        } else {
-          fechaFinal = null;
+      for (const numero in agrupados) {
+        const cliente = agrupados[numero];
+        if (numero === "573114207673") {
+          await enviarMensajeVencimiento(numero, cliente.nombre, cliente.cuentas, "🧪 PRUEBA DIARIA");
+          continue;
         }
 
-        if (!fechaFinal || !fechaFinal.isValid) continue;
+        const cuentas = cliente.cuentas;
+        let vencenManana = [];
+        let vencenHoy = [];
+        let enMora = [];
 
-        // ✅ Compara solo fechas (sin horas)
-        const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
-        const finalDia = fechaFinal.startOf("day");
+        for (const cuenta of cuentas) {
+          let fechaFinal;
+          const rawFecha = cuenta.fechaFinal;
 
-        // ✅ Esto garantiza que el diff sea exacto (0, 1 o negativo)
-        const diff = finalDia.diff(hoy, "days").days;
+          if (typeof rawFecha === "string") {
+            const partes = rawFecha.split("/");
+            const dia = partes[0].padStart(2, "0");
+            const mes = partes[1].padStart(2, "0");
+            const anio = partes[2];
+            const fechaStr = `${dia}/${mes}/${anio}`;
+            fechaFinal = DateTime.fromFormat(fechaStr, "dd/MM/yyyy", { zone: "America/Bogota" });
+          } else if (typeof rawFecha === "number") {
+            fechaFinal = DateTime.fromJSDate(new Date(Math.round((rawFecha - 25569 + 1) * 86400 * 1000))).setZone("America/Bogota").startOf("day");
+          } else if (rawFecha instanceof Date) {
+            fechaFinal = DateTime.fromJSDate(rawFecha).setZone("America/Bogota");
+          } else {
+            fechaFinal = null;
+          }
 
-        console.log(`[DEBUG FECHA] Cliente: ${cliente.nombre}, Excel: ${rawFecha}, Parseada: ${finalDia.toISODate()}, Hoy: ${hoy.toISODate()}, Diff: ${diff}`);
+          if (!fechaFinal || !fechaFinal.isValid) continue;
 
-        if (diff === 1) {
-          vencenManana.push(cuenta);
-        } else if (diff === 0) {
-          vencenHoy.push(cuenta);
-        } else if (diff < 0) {
-          console.log(`📆 Servicio en mora para ${cliente.nombre}: ${cuenta.cuenta} (${diff} días)`);
-          enMora.push({ ...cuenta, dias: Math.abs(Math.round(diff)) });
+          const finalDia = fechaFinal.startOf("day");
+          const diff = finalDia.diff(hoy, "days").days;
+
+          console.log(`[DEBUG FECHA] Cliente: ${cliente.nombre}, Excel: ${rawFecha}, Parseada: ${finalDia.toISODate()}, Hoy: ${hoy.toISODate()}, Diff: ${diff}`);
+
+          if (diff === 1) {
+            vencenManana.push(cuenta);
+          } else if (diff === 0) {
+            vencenHoy.push(cuenta);
+          } else if (diff < 0) {
+            console.log(`📆 Servicio en mora para ${cliente.nombre}: ${cuenta.cuenta} (${diff} días)`);
+            enMora.push({ ...cuenta, dias: Math.abs(Math.round(diff)) });
+          }
         }
 
+        if (vencenManana.length > 0) {
+          await enviarMensajeVencimiento(numero, cliente.nombre, vencenManana, "MAÑANA");
+        }
 
+        if (vencenHoy.length > 0) {
+          await enviarMensajeVencimiento(numero, cliente.nombre, vencenHoy, "HOY");
+        }
+
+        for (const mora of enMora) {
+          await enviarMensajeMora(numero, cliente.nombre, mora);
+        }
       }
-
-
-      if (vencenManana.length > 0) {
-        await enviarMensajeVencimiento(numero, cliente.nombre, vencenManana, "MAÑANA");
-      }
-
-      if (vencenHoy.length > 0) {
-        await enviarMensajeVencimiento(numero, cliente.nombre, vencenHoy, "HOY");
-      }
-
-      for (const mora of enMora) {
-        await enviarMensajeMora(numero, cliente.nombre, mora);
-      }
+    } catch (err) {
+      logError("Error en ejecución del cron diario", err);
     }
   });
 
-
   // ⚡ Enviar al instante solo para pruebas (comenta esto en producción)
-  await enviarTodosLosMensajes();
+  //await enviarTodosLosMensajes();
 });
 
 
@@ -237,11 +262,16 @@ client.on("message", async (msg) => {
   if (cuentasUsuario.length === 0) return;
 
   if (msg.hasMedia) {
-    const media = await msg.downloadMedia();
-    if (!["image/jpeg", "image/png"].includes(media.mimetype)) {
-      const cliente = cuentasUsuario[0];
-      await guardarRespuesta(numero, cliente, "NO RECONOCIDO", fechaActual);
+    let media;
+    try {
+      media = await msg.downloadMedia();
+    } catch (err) {
+      console.error("❌ Error descargando media:", err.message);
+      await client.sendMessage(msg.from, "⚠️ Ocurrió un error descargando tu archivo. Intenta enviarlo de nuevo.");
+      return;
+    }
 
+    if (!media || !["image/jpeg", "image/png"].includes(media.mimetype)) {
       let historial = {};
       if (fs.existsSync(rutaMensajesEnviados)) {
         try {
@@ -249,19 +279,16 @@ client.on("message", async (msg) => {
           historial = contenido ? JSON.parse(contenido) : {};
         } catch (err) {
           console.error("⚠️ Error leyendo mensajesEnviados.json:", err.message);
-          historial = {};
         }
       }
 
       const mensajeAnterior = historial[numero];
       if (mensajeAnterior) {
+        await client.sendMessage(numero + "@c.us", "🤖 No entendí eso, pero aquí está lo último que te envié:");
         await client.sendMessage(numero + "@c.us", mensajeAnterior);
-        console.log(`🔁 Reenviado mensaje original a ${numero}`);
       } else {
-        console.warn(`⚠️ No se encontró mensaje anterior para ${numero}`);
+        await client.sendMessage(numero + "@c.us", "🤔 No entendí tu mensaje. Intenta escribir *SI* o *NO* para continuar.");
       }
-
-      console.log(`⚠️ Tipo de archivo no admitido de ${numero}: ${media.mimetype}`);
       return;
     }
 
@@ -296,7 +323,7 @@ client.on("message", async (msg) => {
         return;
       }
     } catch (err) {
-      console.error("❌ Error durante OCR:", err);
+      await logError("❌ Error durante OCR:", err, tempPath);
       await msg.reply("⚠️ No pudimos leer la imagen. Asegúrate que el pantallazo esté claro y vuelve a intentarlo.");
       await fs.promises.unlink(tempPath).catch(() => { });
       return;
@@ -349,48 +376,68 @@ client.on("message", async (msg) => {
     const mensaje = `☹️ Siento que hayas tenido algún inconveniente...`;
     msg.reply(mensaje);
     for (const cliente of cuentasUsuario) await guardarRespuesta(numero, cliente, "NO", fechaActual);
-  } else {
-    const cliente = cuentasUsuario[0];
 
-    // Agrupar todos los datos de la cuenta como se usaron antes
-    const cuentasAgrupadas = agruparClientesPorNumero(clientes);
-    const datosCliente = cuentasAgrupadas[numero];
 
-    if (!datosCliente || !datosCliente.cuentas || datosCliente.cuentas.length === 0) {
-      console.warn(`⚠️ No se encontraron cuentas para reenviar mensaje de vencimiento a ${numero}`);
-      return;
-    }
+} else {
+  const cliente = cuentasUsuario[0];
 
-    await guardarRespuesta(numero, cliente, "NO RECONOCIDO", fechaActual);
-    // Reenviar mensaje original guardado
-    let historial = {};
-    if (fs.existsSync(rutaMensajesEnviados)) {
-      try {
-        const contenido = fs.readFileSync(rutaMensajesEnviados, "utf8");
-        historial = contenido ? JSON.parse(contenido) : {};
-      } catch (err) {
-        console.error("⚠️ Error leyendo mensajesEnviados.json:", err.message);
-        historial = {};
-      }
-    }
+  // 🔒 Validar si ya tiene comprobante ✅
+  const yaPago = cliente["RESPUESTA"]?.toLowerCase().includes("comprobante");
 
-    const mensajeAnterior = historial[numero];
-
-    if (mensajeAnterior) {
-      await client.sendMessage(numero + "@c.us", mensajeAnterior);
-      console.log(`🔁 Reenviado mensaje original a ${numero}`);
+  if (yaPago) {
+    const palabrasClave = ["cuenta", "netflix", "disney", "tele latino", "ayuda", "tienes", "ip tv", "iptv", "necesito"];
+    const contieneClave = palabrasClave.some(p => texto.includes(p));
+  
+    if (contieneClave) {
+      await client.sendMessage(numero + "@c.us", "🎁 Si deseas activar una cuenta adicional, escribe *AYUDA* o contacta a un asesor. 👩‍💻");
     } else {
-      console.warn(`⚠️ No se encontró mensaje anterior para ${numero}`);
+      await client.sendMessage(numero + "@c.us", "✅ Ya registramos tu pago exitosamente. Si necesitas algo más, escríbeme y pronto te atenderemos. 🙌");
     }
-
-
-    console.log(`🔁 Mensaje reenviado por respuesta no válida de ${numero}`);
+  
+    console.log(`✅ Mensaje ignorado porque ya pagó: ${numero}`);
+    return;
   }
+  
 
+  if (yaFueConfirmado(numero)) {
+    const palabrasClave = [
+      "cuenta", "netflix", "disney", "tele latino", "ayuda", "tienes", "ip tv", "iptv", "necesito"
+    ];
+    const contieneClave = palabrasClave.some(p => texto.includes(p));
+  
+    if (contieneClave) {
+      await client.sendMessage(numero + "@c.us", "🎁 Si deseas activar una cuenta adicional, escribe *AYUDA* o contacta a un asesor. 👩‍💻");
+    } else if (!yaRespondido(numero)) {
+      await client.sendMessage(numero + "@c.us", "✅ Ya registramos tu pago exitosamente. Si necesitas algo más, escríbeme y pronto te atenderemos. 🙌");
+      marcarRespondido(numero);
+    } else {
+      console.log(`🤐 Ya se respondió al cliente confirmado: ${numero}`);
+    }
+    return;
+  }
+  
+  // Reenviar mensaje original guardado
+  let historial = {};
+if (fs.existsSync(rutaMensajesEnviados)) {
+  try {
+    const contenido = fs.readFileSync(rutaMensajesEnviados, "utf8");
+    historial = contenido ? JSON.parse(contenido) : {};
+  } catch (err) {
+    console.error("⚠️ Error leyendo mensajesEnviados.json:", err.message);
+    historial = {};
+  }
+}
 
-
+const mensajeAnterior = historial[numero];
+if (mensajeAnterior) {
+  await client.sendMessage(numero + "@c.us", mensajeAnterior);
+  console.log(`🔁 Reenviado mensaje original a ${numero}`);
+} else {
+  console.warn(`⚠️ No se encontró mensaje anterior para ${numero}`);
+}
+console.log(`🔁 Mensaje reenviado por respuesta no válida de ${numero}`);
+}
 });
-
 
 
 function formatearPesosColombianos(valor) {
@@ -627,78 +674,77 @@ function generarResumenEstado(resumen) {
 
 
 
+// async function enviarTodosLosMensajes() {
+//   const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
+//   const clientes = await leerClientes();
 
-async function enviarTodosLosMensajes() {
-  const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
-  const clientes = await leerClientes();
+//   const agrupados = agruparClientesPorNumero(clientes);
 
-  const agrupados = agruparClientesPorNumero(clientes);
+//   for (const numero in agrupados) {
+//     if (numero !== "573114207673") continue; // Solo ese número
+//     const cliente = agrupados[numero];
+//     const cuentas = cliente.cuentas;
+//     let vencenManana = [];
+//     let vencenHoy = [];
+//     let enMora = [];
 
-  for (const numero in agrupados) {
-    if (numero !== "573114207673") continue; // Solo ese número
-    const cliente = agrupados[numero];
-    const cuentas = cliente.cuentas;
-    let vencenManana = [];
-    let vencenHoy = [];
-    let enMora = [];
+//     for (const cuenta of cuentas) {
+//       let fechaFinal;
+//       const rawFecha = cuenta.fechaFinal;
 
-    for (const cuenta of cuentas) {
-      let fechaFinal;
-      const rawFecha = cuenta.fechaFinal;
+//       if (typeof rawFecha === "string") {
+//         const partes = rawFecha.split("/");
+//         const dia = partes[0].padStart(2, "0");
+//         const mes = partes[1].padStart(2, "0");
+//         const anio = partes[2];
+//         const fechaStr = `${dia}/${mes}/${anio}`;
+//         fechaFinal = DateTime.fromFormat(fechaStr, "dd/MM/yyyy", { zone: "America/Bogota" });
+//       } else if (typeof rawFecha === "number") {
+//         fechaFinal = DateTime.fromJSDate(new Date(Math.round((rawFecha - 25569 + 1) * 86400 * 1000)))
+//           .setZone("America/Bogota")
+//           .startOf("day");
 
-      if (typeof rawFecha === "string") {
-        const partes = rawFecha.split("/");
-        const dia = partes[0].padStart(2, "0");
-        const mes = partes[1].padStart(2, "0");
-        const anio = partes[2];
-        const fechaStr = `${dia}/${mes}/${anio}`;
-        fechaFinal = DateTime.fromFormat(fechaStr, "dd/MM/yyyy", { zone: "America/Bogota" });
-      } else if (typeof rawFecha === "number") {
-        fechaFinal = DateTime.fromJSDate(new Date(Math.round((rawFecha - 25569 + 1) * 86400 * 1000)))
-          .setZone("America/Bogota")
-          .startOf("day");
+//       } else if (rawFecha instanceof Date) {
+//         fechaFinal = DateTime.fromJSDate(rawFecha).setZone("America/Bogota");
+//       } else {
+//         fechaFinal = null;
+//       }
 
-      } else if (rawFecha instanceof Date) {
-        fechaFinal = DateTime.fromJSDate(rawFecha).setZone("America/Bogota");
-      } else {
-        fechaFinal = null;
-      }
+//       if (!fechaFinal || !fechaFinal.isValid) continue;
 
-      if (!fechaFinal || !fechaFinal.isValid) continue;
+//       // ✅ Compara solo fechas (sin horas)
+//       const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
+//       const finalDia = fechaFinal.startOf("day");
 
-      // ✅ Compara solo fechas (sin horas)
-      const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
-      const finalDia = fechaFinal.startOf("day");
+//       // ✅ Esto garantiza que el diff sea exacto (0, 1 o negativo)
+//       const diff = finalDia.diff(hoy, "days").days;
 
-      // ✅ Esto garantiza que el diff sea exacto (0, 1 o negativo)
-      const diff = finalDia.diff(hoy, "days").days;
+//       console.log(`[DEBUG FECHA] Cliente: ${cliente.nombre}, Excel: ${rawFecha}, Parseada: ${finalDia.toISODate()}, Hoy: ${hoy.toISODate()}, Diff: ${diff}`);
 
-      console.log(`[DEBUG FECHA] Cliente: ${cliente.nombre}, Excel: ${rawFecha}, Parseada: ${finalDia.toISODate()}, Hoy: ${hoy.toISODate()}, Diff: ${diff}`);
-
-      if (diff === 1) {
-        vencenManana.push(cuenta);
-      } else if (diff === 0) {
-        vencenHoy.push(cuenta);
-      } else if (diff < 0) {
-        console.log(`📆 Servicio en mora para ${cliente.nombre}: ${cuenta.cuenta} (${diff} días)`);
-        enMora.push({ ...cuenta, dias: Math.abs(Math.round(diff)) });
-      }
-    }
+//       if (diff === 1) {
+//         vencenManana.push(cuenta);
+//       } else if (diff === 0) {
+//         vencenHoy.push(cuenta);
+//       } else if (diff < 0) {
+//         console.log(`📆 Servicio en mora para ${cliente.nombre}: ${cuenta.cuenta} (${diff} días)`);
+//         enMora.push({ ...cuenta, dias: Math.abs(Math.round(diff)) });
+//       }
+//     }
 
 
-    if (vencenManana.length > 0) {
-      await enviarMensajeVencimiento(numero, cliente.nombre, vencenManana, "MAÑANA");
-    }
+//     if (vencenManana.length > 0) {
+//       await enviarMensajeVencimiento(numero, cliente.nombre, vencenManana, "MAÑANA");
+//     }
 
-    if (vencenHoy.length > 0) {
-      await enviarMensajeVencimiento(numero, cliente.nombre, vencenHoy, "HOY");
-    }
+//     if (vencenHoy.length > 0) {
+//       await enviarMensajeVencimiento(numero, cliente.nombre, vencenHoy, "HOY");
+//     }
 
-    for (const mora of enMora) {
-      await enviarMensajeMora(numero, cliente.nombre, mora);
-    }
-  }
-}
+//     for (const mora of enMora) {
+//       await enviarMensajeMora(numero, cliente.nombre, mora);
+//     }
+//   }
+// }
 
 
 

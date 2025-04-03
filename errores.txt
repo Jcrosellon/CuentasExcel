@@ -1,0 +1,10 @@
+🕓 2025-04-03T13:22:14.914-05:00 - ❌ Promesa no manejada (unhandledRejection)
+🛠️ Detalles: Error: Evaluation failed: Error: Could not get the quoted message.
+    at new Error (<anonymous>:6:31)
+    at window.WWebJS.sendMessage (pptr://__puppeteer_evaluation_script__:48:23)
+    at async pptr://__puppeteer_evaluation_script__:10:25
+    at ExecutionContext._ExecutionContext_evaluate (C:\Users\JoseRosellon\CuentasExcel\node_modules\puppeteer-core\lib\cjs\puppeteer\common\ExecutionContext.js:229:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async ExecutionContext.evaluate (C:\Users\JoseRosellon\CuentasExcel\node_modules\puppeteer-core\lib\cjs\puppeteer\common\ExecutionContext.js:107:16)
+    at async Client.sendMessage (C:\Users\JoseRosellon\CuentasExcel\node_modules\whatsapp-web.js\src\Client.js:950:28)
+
