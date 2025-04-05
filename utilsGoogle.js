@@ -1,7 +1,9 @@
+// utilsGoogle.js
 const { google } = require("googleapis");
 const config = require("./config.json");
 const fs = require("fs");
 const path = require("path");
+const { DateTime } = require("luxon");
 
 const CREDENTIALS_PATH = path.join(__dirname, "credentials.json");
 if (!fs.existsSync(CREDENTIALS_PATH)) {
@@ -39,13 +41,11 @@ async function leerClientesGoogle() {
     });
 
     const rows = res.data.values || [];
-
     const headers = [
-        "NOMBRE", "ALIAS", "FECHA INICIO", "FECHA FINAL", "USUARIO", "CLAVE",
-        "CUENTA", "DISPOSITIVO", "PERFIL", "VALOR", "NUMERO WHATSAPP",
-        "RESPUESTA", "FECHA RESPUESTA", "COMPROBANTE"
-      ];
-      
+      "NOMBRE", "ALIAS", "FECHA INICIO", "FECHA FINAL", "USUARIO", "CLAVE",
+      "CUENTA", "DISPOSITIVO", "PERFIL", "VALOR", "NUMERO WHATSAPP",
+      "RESPUESTA", "FECHA RESPUESTA", "COMPROBANTE"
+    ];
 
     return rows.map(row => {
       const obj = {};
@@ -94,15 +94,15 @@ async function actualizarRespuestaEnGoogle(numero, respuesta, fecha, referencia 
       requestBody: {
         data: [
           {
-            range: `${hoja}!L${rowIndex}`, // RESPUESTA
+            range: `${hoja}!L${rowIndex}`,
             values: [[respuesta]],
           },
           {
-            range: `${hoja}!M${rowIndex}`, // FECHA RESPUESTA
+            range: `${hoja}!M${rowIndex}`,
             values: [[fecha]],
           },
           {
-            range: `${hoja}!N${rowIndex}`, // COMPROBANTE o REFERENCIA
+            range: `${hoja}!N${rowIndex}`,
             values: [[referencia]],
           }
         ],
@@ -118,9 +118,47 @@ async function actualizarRespuestaEnGoogle(numero, respuesta, fecha, referencia 
   }
 }
 
+async function agregarNuevaFilaEnGoogleSheets(pendiente) {
+  try {
+    const sheets = await getSheet();
+    const fechaActual = DateTime.now().setZone("America/Bogota").toFormat("dd/LL/yyyy");
+    const fechaFinal = DateTime.now().plus({ days: 30 }).setZone("America/Bogota").toFormat("dd/LL/yyyy");
 
+    const nuevaFila = [
+      pendiente.nombre || "",        // NOMBRE
+      "",                             // ALIAS
+      fechaActual,                   // FECHA INICIO
+      fechaFinal,                    // FECHA FINAL
+      pendiente.usuario || "",      // USUARIO
+      "",                             // CLAVE
+      pendiente.cuenta || "",       // CUENTA
+      "",                             // DISPOSITIVO
+      "1",                            // PERFIL (por defecto)
+      "",                             // VALOR (puedes completarlo si tienes precio en texto del producto)
+      pendiente.numero || "",        // NUMERO WHATSAPP
+      "✅ Comprobante",            // RESPUESTA
+      fechaActual,                   // FECHA RESPUESTA
+      pendiente.referencia || ""     // COMPROBANTE
+    ];
+
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${config.hojaExcel}!A1`,
+      valueInputOption: "USER_ENTERED",
+      insertDataOption: "INSERT_ROWS",
+      requestBody: {
+        values: [nuevaFila]
+      }
+    });
+
+    console.log("✅ Nueva venta registrada en Google Sheets:", pendiente);
+  } catch (error) {
+    console.error("❌ Error al agregar nueva fila en Google Sheets:", error.message);
+  }
+}
 
 module.exports = {
   leerClientesGoogle,
   actualizarRespuestaEnGoogle,
+  agregarNuevaFilaEnGoogleSheets,
 };

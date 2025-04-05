@@ -1,6 +1,0 @@
-2025/04/03-13:22:06.728 3910 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
-2025/04/03-13:22:06.729 3910 Recovering log #24
-2025/04/03-13:22:06.730 3910 Reusing old log C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\Local Storage\leveldb/000024.log 
-2025/04/03-14:42:20.327 8344 Level-0 table #28: started
-2025/04/03-14:42:20.331 8344 Level-0 table #28: 15114 bytes OK
-2025/04/03-14:42:20.332 8344 Delete type=0 #24

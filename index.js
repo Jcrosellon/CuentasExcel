@@ -17,6 +17,9 @@ const path = "./respuestas.json";
 const rutaPendientes = "./pendientes.json";
 const rutaMensajesEnviados = "./mensajesEnviados.json";
 const { yaFueConfirmado, marcarRespondido, yaRespondido } = require("./postPagoManager");
+const { cargarCatalogoNumerado, buscarProductoPorNumero } = require("./catalogoManager");
+const { agregarNuevaFilaEnGoogleSheets } = require("./utilsGoogle");
+
 
 const perfilMaximos = {
   "NETFLIX": 5,
@@ -80,7 +83,7 @@ client.on("qr", (qr) => {
 
 client.on("ready", async () => {
   console.log("✅ Bot listo. Programando envíos automáticos...");
-
+  cargarCatalogoNumerado(); // 🔃 Cargar productos una vez
   cron.schedule("0 18 * * *", async () => {
     try {
       const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
@@ -162,98 +165,91 @@ client.on("message", async (msg) => {
   const numero = msg.from.replace("@c.us", "");
   const fechaActual = DateTime.now().setZone("America/Bogota").toISODate();
 
+  // 🔁 Reemplazar dentro del bloque adminPhone
   if (msg.from === adminPhone) {
     let pendientes = fs.existsSync(rutaPendientes) ? JSON.parse(fs.readFileSync(rutaPendientes)) : [];
-    const pendiente = pendientes.shift();
+  
+    // ⏪ Restauramos el pendiente anterior si no se ha procesado
+    const pendiente = pendientes.length > 0 && !pendientes[0].confirmado ? pendientes.shift() : null;
     fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
-
-    if (texto === "estado") {
-      const clientes = await leerClientes();
-
-      const resumen = obtenerEstadoDeCuentas(clientes);
-      const mensaje = generarResumenEstado(resumen);
-      await client.sendMessage(msg.from, mensaje);
+  
+    // ✅ Confirmación de pago
+    if ((texto === "confirmado" || texto === "✅") && pendiente) {
+      await client.sendMessage(pendiente.numero + "@c.us", `✅ Tu pago ha sido confirmado. Ref: *${pendiente.referencia}*. ¡Gracias por tu compra! 🎉\nEspera un momento mientras generamos tus accesos...`);
+  
+      if (config.useGoogleSheet) {
+        await client.sendMessage(adminPhone, `📝 Por favor responde con los datos de la nueva cuenta en este formato:\n\n*DISNEY*\nusuario: juan123\nclave: abc456`);
+        
+        pendiente.confirmado = true;
+        pendiente.fechaConfirmacion = DateTime.now().toISO();
+        fs.writeFileSync("./pendiente_actual.json", JSON.stringify(pendiente, null, 2));
+      } else {
+        await client.sendMessage(adminPhone, `⚠️ El registro automático solo funciona con Google Sheets.`);
+      }
       return;
     }
-
-    if (texto === "limpiar pendientes") {
-      fs.writeFileSync(rutaPendientes, JSON.stringify([], null, 2));
-      msg.reply("🧹 Pendientes limpiados con éxito.");
-      console.log("🧼 Admin limpió todos los pendientes.");
-      return;
-    }
-
-
-    if (texto === "analizar último") {
-      const pendientes = fs.existsSync(rutaPendientes)
-        ? JSON.parse(fs.readFileSync(rutaPendientes))
-        : [];
-
-      if (pendientes.length === 0) {
-        await client.sendMessage(adminPhone, "⚠️ No hay pendientes guardados para analizar.");
-        return;
-      }
-
-      const ultimo = pendientes[pendientes.length - 1];
-
-      if (!ultimo.imagen || !fs.existsSync(ultimo.imagen)) {
-        await client.sendMessage(adminPhone, "⚠️ No se encontró la imagen del último pendiente.");
-        return;
-      }
-
-      await client.sendMessage(adminPhone, "🔁 Reanalizando el último pantallazo...");
-
-      try {
-        const clientes = await leerClientes();
-        const clienteRelacionado = clientes.find(c =>
-          (c["NUMERO WHATSAPP"]?.toString() || "").includes(ultimo.numero)
-        );
-
-        const valorEsperado = clienteRelacionado
-          ? clienteRelacionado["VALOR"]?.toString().replace(/\./g, "")
-          : "20000";
-
-        const resultado = await validarComprobante(ultimo.imagen, valorEsperado);
-
-
-        if (!resultado.valido) {
-          await client.sendMessage(adminPhone, "❌ OCR no logró validar el comprobante nuevamente.");
-          return;
+  
+    // ✅ Registro de cuenta nueva (respuesta del admin con datos de cuenta)
+    if (fs.existsSync("./pendiente_actual.json")) {
+      const pendiente = JSON.parse(fs.readFileSync("./pendiente_actual.json", "utf8"));
+  
+      const patron = /([\w\s]+)[\n\r]+usuario[:\s]+(\S+)[\n\r]+clave[:\s]+(\S+)/i;
+      const match = msg.body.match(patron);
+  
+      if (match) {
+        const cuenta = match[1].trim().toUpperCase();
+        const usuarioCuenta = match[2].trim();
+        const claveCuenta = match[3].trim();
+  
+        const hoy = DateTime.now().setZone("America/Bogota");
+        const fechaInicio = hoy.toFormat("dd/LL/yyyy");
+        const fechaFinal = hoy.plus({ days: 30 }).toFormat("dd/LL/yyyy");
+  
+        const nuevaFila = {
+          nombre: pendiente.nombre,
+          alias: "",
+          fechaInicio,
+          fechaFinal,
+          usuario: usuarioCuenta,
+          clave: claveCuenta,
+          cuenta,
+          dispositivo: "",
+          perfil: "1",
+          valor: "",
+          numero: pendiente.numero,
+          respuesta: "✅ Comprobante",
+          fechaRespuesta: fechaInicio,
+          referencia: pendiente.referencia || ""
+        };
+  
+        if (config.useGoogleSheet) {
+          await agregarNuevaFilaEnGoogleSheets(nuevaFila);
         }
-
-        await client.sendMessage(adminPhone, `🧾 Referencia: ${resultado.referenciaDetectada}\n💵 Valor: ${resultado.valorDetectado}`);
-        await client.sendMessage(adminPhone, new MessageMedia("image/jpeg", fs.readFileSync(ultimo.imagen).toString("base64")), {
-          caption: "🖼 Comprobante reanalizado",
-        });
-      } catch (err) {
-        console.error("❌ Error reanalizando pantallazo:", err);
-        await client.sendMessage(adminPhone, "❌ Hubo un error al analizar el pantallazo.");
+  
+        await client.sendMessage(pendiente.numero + "@c.us",
+  `✅ Tu cuenta ha sido activada:
+  
+  📺 *${cuenta}*  
+  👤 Usuario: *${usuarioCuenta}*  
+  🔐 Clave: *${claveCuenta}*
+  
+  ⚠ TÉRMINOS Y CONDICIONES  
+  📌 USAR LAS PANTALLAS CONTRATADAS  
+  📌 NO COMPARTA LA CUENTA
+  
+  📝 Incumplir estos términos puede generar la pérdida de garantía.
+  
+  Gracias por elegir *Roussillon Technology*. ¡Estamos comprometidos con ofrecerte el mejor servicio!*`);
+  
+        await client.sendMessage(adminPhone, `📌 Cuenta *${cuenta}* registrada exitosamente para *${pendiente.nombre}*.`);
+  
+        // 🧹 Eliminamos el archivo pendiente_actual
+        fs.unlinkSync("./pendiente_actual.json");
+        return;
+      } else {
+        await client.sendMessage(adminPhone, `❌ Formato no reconocido. Asegúrate de escribir:\n\nDISNEY\nusuario: juan123\nclave: abc456`);
       }
     }
-
-
-
-    if (pendiente) {
-      const clientes = await leerClientes();
-
-      const relacionados = clientes.filter(c => (c["NUMERO WHATSAPP"]?.toString() || "").includes(pendiente.numero));
-      for (const cliente of relacionados) {
-        await actualizarComprobanteFila(cliente["NUMERO WHATSAPP"], pendiente.referencia);
-        await actualizarRespuestaEnExcel(cliente["NUMERO WHATSAPP"], "✅ Comprobante", DateTime.now().toISODate(), pendiente.referencia);
-      }
-      if (texto === "confirmado" || texto === "✅") {
-        const mensajeConfirmacion = `✅ Tu pago ha sido confirmado. Ref: *${pendiente.referencia}*. ¡Gracias por continuar con nosotros! 🎉`;
-        await client.sendMessage(pendiente.numero + "@c.us", mensajeConfirmacion);
-        await client.sendMessage(adminPhone, `✅ Confirmaste el pago con referencia: *${pendiente.referencia}*`);
-      }
-      else if (texto === "rechazado" || texto === "❌") {
-        await client.sendMessage(pendiente.numero + "@c.us", "❌ Tu pago fue rechazado. Verifica que el pantallazo sea correcto y vuelve a intentarlo.");
-        await client.sendMessage(adminPhone, `❌ Rechazaste el pago con referencia: *${pendiente.referencia}*`);
-      }
-    } else {
-      msg.reply("⚠️ No hay pagos pendientes para confirmar o rechazar.");
-    }
-    return;
   }
 
   const clientes = await leerClientes();
@@ -285,6 +281,7 @@ client.on("message", async (msg) => {
       const mensajeAnterior = historial[numero];
       if (mensajeAnterior) {
         await client.sendMessage(numero + "@c.us", "🤖 No entendí eso, pero aquí está lo último que te envié:");
+      
         await client.sendMessage(numero + "@c.us", mensajeAnterior);
       } else {
         await client.sendMessage(numero + "@c.us", "🤔 No entendí tu mensaje. Intenta escribir *SI* o *NO* para continuar.");
@@ -360,7 +357,8 @@ client.on("message", async (msg) => {
       fecha: DateTime.now().toISO(),
       nombre: clienteData["NOMBRE"],
       cuenta: clienteData["CUENTA"],
-      usuario: clienteData["USUARIO"]
+      usuario: clienteData["USUARIO"],
+      esNuevo: yaPago // ← Si ya pagó, esto será true
     });
     fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
     console.log("📩 Pendiente agregado para revisión:", nuevaReferencia);
@@ -375,74 +373,128 @@ client.on("message", async (msg) => {
   } else if (["no", "❌ no"].includes(texto)) {
     const mensaje = `☹️ Siento que hayas tenido algún inconveniente...`;
     msg.reply(mensaje);
+    const catalogo = obtenerCatalogoTexto();
+    await client.sendMessage(numero + "@c.us", catalogo);
+
     for (const cliente of cuentasUsuario) await guardarRespuesta(numero, cliente, "NO", fechaActual);
 
 
-} else {
-  const cliente = cuentasUsuario[0];
+  } else {
+    const cliente = cuentasUsuario[0];
 
-  // 🔒 Validar si ya tiene comprobante ✅
-  const yaPago = cliente["RESPUESTA"]?.toLowerCase().includes("comprobante");
+    // 🔒 Validar si ya tiene comprobante ✅
+    const yaPago = cliente["RESPUESTA"]?.toLowerCase().includes("comprobante");
 
-  if (yaPago) {
-    const palabrasClave = ["cuenta", "netflix", "disney", "tele latino", "ayuda", "tienes", "ip tv", "iptv", "necesito"];
-    const contieneClave = palabrasClave.some(p => texto.includes(p));
-  
-    if (contieneClave) {
-      await client.sendMessage(numero + "@c.us", "🎁 Si deseas activar una cuenta adicional, escribe *AYUDA* o contacta a un asesor. 👩‍💻");
-    } else {
-      await client.sendMessage(numero + "@c.us", "✅ Ya registramos tu pago exitosamente. Si necesitas algo más, escríbeme y pronto te atenderemos. 🙌");
+    if (yaPago) {
+      const numeroPedido = parseInt(texto.replace(/[^\d]/g, ""));
+      const producto = buscarProductoPorNumero(numeroPedido);
+    
+      if (!isNaN(numeroPedido) && producto) {
+        await client.sendMessage(numero + "@c.us", `🛍️ Has elegido:\n${producto}\n\n💳 Realiza el pago a *Nequi o Daviplata: 3183192913* y envía el pantallazo por aquí para procesar tu nuevo pedido. 🙌`);
+        await client.sendMessage(adminPhone, `🆕 Cliente *${numero}* ya es cliente activo y quiere otra cuenta:\n${producto}`);
+        return;
+      }
+      
+
+      const palabrasClave = [ "cuenta", "netflix", "disney", "tele latino", "ayuda", "asesor", 
+        "ip tv", "iptv", "necesito", "otra cuenta", "una cuenta", "quiero más"];
+      const contieneClave = palabrasClave.some(p => texto.includes(p));
+    
+      if (contieneClave) {
+        await client.sendMessage(numero + "@c.us", "📦 Estos son nuestros servicios disponibles. Selecciona el número del producto que deseas:");
+        const catalogo = obtenerCatalogoTexto();
+        await client.sendMessage(numero + "@c.us", catalogo);
+      } else {
+        await client.sendMessage(numero + "@c.us", "✅ Ya registramos tu pago exitosamente. Si necesitas algo más, escríbeme y pronto te atenderemos. 🙌");
+      }
+    
+      return;
     }
-  
-    console.log(`✅ Mensaje ignorado porque ya pagó: ${numero}`);
-    return;
-  }
-  
+    
 
-  if (yaFueConfirmado(numero)) {
-    const palabrasClave = [
-      "cuenta", "netflix", "disney", "tele latino", "ayuda", "tienes", "ip tv", "iptv", "necesito"
-    ];
-    const contieneClave = palabrasClave.some(p => texto.includes(p));
-  
-    if (contieneClave) {
-      await client.sendMessage(numero + "@c.us", "🎁 Si deseas activar una cuenta adicional, escribe *AYUDA* o contacta a un asesor. 👩‍💻");
-    } else if (!yaRespondido(numero)) {
-      await client.sendMessage(numero + "@c.us", "✅ Ya registramos tu pago exitosamente. Si necesitas algo más, escríbeme y pronto te atenderemos. 🙌");
-      marcarRespondido(numero);
-    } else {
-      console.log(`🤐 Ya se respondió al cliente confirmado: ${numero}`);
+
+    if (yaFueConfirmado(numero)) {
+      // Primero: ¿Está seleccionando un número de producto?
+      const numeroPedido = parseInt(texto.replace(/[^\d]/g, ""));
+      if (!isNaN(numeroPedido)) {
+        const producto = buscarProductoPorNumero(numeroPedido);
+        if (producto) {
+          await client.sendMessage(numero + "@c.us", `🛍️ Has elegido:\n${producto}\n\n💳 Realiza el pago a *Nequi o Daviplata: 3183192913* y envía el pantallazo por aquí. ¡Gracias por tu compra! 🙌`);
+          await client.sendMessage(adminPhone, `📦 Cliente *${numero}* ya confirmado está interesado en:\n${producto}`);
+          return;
+        }
+      }
+    
+      // Segundo: ¿Pidió ayuda o asesor?
+      const palabrasClave = ["cuenta", "netflix", "disney", "tele latino", "ayuda", "tienes", "ip tv", "iptv", "necesito", "asesor"];
+      const contieneClave = palabrasClave.some(p => texto.includes(p));
+    
+      if (contieneClave) {
+        await client.sendMessage(numero + "@c.us", "📦 Estos son nuestros servicios disponibles. Selecciona el número del producto que deseas:");
+        const catalogo = obtenerCatalogoTexto();
+        await client.sendMessage(numero + "@c.us", catalogo);
+      } else if (!yaRespondido(numero)) {
+        await client.sendMessage(numero + "@c.us", "✅ Ya registramos tu pago exitosamente. Si necesitas algo más, escríbeme y pronto te atenderemos. 🙌");
+        marcarRespondido(numero);
+      } else {
+        console.log(`🤐 Ya se respondió al cliente confirmado: ${numero}`);
+      }
+      return;
     }
-    return;
-  }
-  
-  // Reenviar mensaje original guardado
-  let historial = {};
-if (fs.existsSync(rutaMensajesEnviados)) {
-  try {
-    const contenido = fs.readFileSync(rutaMensajesEnviados, "utf8");
-    historial = contenido ? JSON.parse(contenido) : {};
-  } catch (err) {
-    console.error("⚠️ Error leyendo mensajesEnviados.json:", err.message);
-    historial = {};
-  }
-}
+    
 
-const mensajeAnterior = historial[numero];
-if (mensajeAnterior) {
-  await client.sendMessage(numero + "@c.us", mensajeAnterior);
-  console.log(`🔁 Reenviado mensaje original a ${numero}`);
-} else {
-  console.warn(`⚠️ No se encontró mensaje anterior para ${numero}`);
-}
-console.log(`🔁 Mensaje reenviado por respuesta no válida de ${numero}`);
-}
+    // Reenviar mensaje original guardado
+    let historial = {};
+    if (fs.existsSync(rutaMensajesEnviados)) {
+      try {
+        const contenido = fs.readFileSync(rutaMensajesEnviados, "utf8");
+        historial = contenido ? JSON.parse(contenido) : {};
+      } catch (err) {
+        console.error("⚠️ Error leyendo mensajesEnviados.json:", err.message);
+        historial = {};
+      }
+    }
+    const numeroPedido = parseInt(texto.replace(/[^\d]/g, ""));
+    if (!isNaN(numeroPedido)) {
+      const producto = buscarProductoPorNumero(numeroPedido);
+      if (producto) {
+        await client.sendMessage(numero + "@c.us", `🛍️ Has elegido:\n${producto}\n\n💳 Realiza el pago a *Nequi o Daviplata: 3183192913* y envía el pantallazo por aquí. ¡Gracias por tu compra! 🙌`);
+        await client.sendMessage(adminPhone, `📦 Cliente *${numero}* está interesado en:\n${producto}`);
+        
+        return;
+      }
+    }
+    
+    const mensajeAnterior = historial[numero];
+    if (mensajeAnterior) {
+      await client.sendMessage(numero + "@c.us", mensajeAnterior);
+      console.log(`🔁 Reenviado mensaje original a ${numero}`);
+    } else {
+      console.warn(`⚠️ No se encontró mensaje anterior para ${numero}`);
+    }
+    console.log(`🔁 Mensaje reenviado por respuesta no válida de ${numero}`);
+  }
 });
 
 
+
+function obtenerCatalogoTexto() {
+  try {
+    return fs.readFileSync("./catalogo.txt", "utf8");
+  } catch (err) {
+    console.error("❌ No se pudo leer el archivo catalogo.txt:", err.message);
+    return "🛍️ Consulta nuestro catálogo más adelante. ¡Estamos actualizándolo!";
+  }
+}
+
+
+
 function formatearPesosColombianos(valor) {
+  valor = parseInt(valor);
+  if (valor > 0 && valor < 1000) valor = valor * 1000; // corrige valores sospechosos
   return Math.round(valor).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }
+
 
 async function enviarMensajeVencimiento(numero, nombre, cuentas, cuando) {
   console.log(`📨 [${cuando}] Enviando mensaje a ${numero}: ${cuentas.map(c => c.cuenta).join(", ")}`);

@@ -70,15 +70,28 @@ const validarComprobante = async (rutaImagen, valorMinimo = 20000) => {
   }
 
   let referenciaDetectada = "";
-  const refMatch = textoPlano.match(/(referencia|aprobaci[oó]n|comprobante)[:\s#]+([a-z0-9\-]+)/i);
-  if (refMatch) {
-    referenciaDetectada = refMatch[2]?.trim() || "";
-  } else {
-    const posiblesRefs = textoPlano.match(/\b\d{5,}\b/g);
+
+  // 🧠 Buscamos líneas que contengan la palabra "referencia" y extraemos lo que sigue
+  const referenciaLinea = textoPlano
+    .split("\n")
+    .map(l => l.trim())
+    .find(l => l.includes("referencia"));
+  
+  if (referenciaLinea) {
+    const matchRef = referenciaLinea.match(/referencia\s*[:\-]?\s*([a-z0-9\-]+)/i);
+    if (matchRef && matchRef[1]) {
+      referenciaDetectada = matchRef[1].trim();
+    }
+  }
+  
+  // 🔍 Fallback si no encontramos nada
+  if (!referenciaDetectada) {
+    const posiblesRefs = textoPlano.match(/\b[a-z0-9]{6,}\b/g);
     if (posiblesRefs && posiblesRefs.length > 0) {
       referenciaDetectada = posiblesRefs[posiblesRefs.length - 1];
     }
   }
+  
 
   referenciaDetectada = referenciaDetectada.replace(/\s+/g, '');
   const valido = valorValido && numeroValido && !!referenciaDetectada;

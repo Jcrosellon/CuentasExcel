@@ -1,19 +1,4 @@
-2025/04/02-17:58:13.159 4c4 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/04/02-17:58:13.163 4c4 Recovering log #310
-2025/04/02-17:58:13.198 4c4 Reusing old log C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000310.log 
-2025/04/02-17:58:17.525 8f68 Level-0 table #318: started
-2025/04/02-17:58:17.536 8f68 Level-0 table #318: 282674 bytes OK
-2025/04/02-17:58:17.538 8f68 Delete type=0 #310
-2025/04/02-17:58:17.539 8f68 Manual compaction at level-0 from '\x00M\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00N\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/04/02-17:58:19.280 4dc0 Compacting 1@1 + 4@2 files
-2025/04/02-17:58:19.430 4dc0 Generated table #319@1: 77114 keys, 2253621 bytes
-2025/04/02-17:58:19.523 4dc0 Generated table #320@1: 13157 keys, 2155321 bytes
-2025/04/02-17:58:19.584 4dc0 Generated table #321@1: 15719 keys, 2160799 bytes
-2025/04/02-17:58:19.716 4dc0 Generated table #322@1: 90789 keys, 2118230 bytes
-2025/04/02-17:58:19.716 4dc0 Compacted 1@1 + 4@2 files => 8687971 bytes
-2025/04/02-17:58:19.717 4dc0 compacted to: files[ 0 0 4 0 0 0 0 ]
-2025/04/02-17:58:19.718 4dc0 Delete type=2 #312
-2025/04/02-17:58:19.718 4dc0 Delete type=2 #313
-2025/04/02-17:58:19.718 4dc0 Delete type=2 #314
-2025/04/02-17:58:19.718 4dc0 Delete type=2 #315
-2025/04/02-17:58:19.718 4dc0 Delete type=2 #318
+2025/04/03-17:36:21.700 56d0 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/03-17:36:21.700 56d0 Recovering log #370
+2025/04/03-17:36:21.795 56d0 Reusing old log C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000370.log 
+2025/04/03-17:36:23.185 17c0 Manual compaction at level-0 from '\x00X\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00Y\x00\x00\x00' @ 0 : 0; will stop at (end)
