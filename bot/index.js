@@ -2,7 +2,7 @@ const qrcode = require("qrcode-terminal");
 const client = require("./clientConfig");
 const config = require("./config/configLoader")();
 const { validarComprobante } = require("./utils/ocrValidator");
-
+const { leerClientesGoogle } = require("./utils/utilsGoogle");
 const { DateTime } = require("luxon");
 const fs = require("fs");
 const cron = require("node-cron");

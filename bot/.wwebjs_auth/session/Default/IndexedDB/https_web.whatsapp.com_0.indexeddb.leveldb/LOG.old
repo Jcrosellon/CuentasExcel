@@ -1,19 +1,4 @@
-2025/04/07-17:24:10.384 8c0 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/04/07-17:24:10.388 8c0 Recovering log #338
-2025/04/07-17:24:10.499 8c0 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000338.log 
-2025/04/07-17:24:14.674 aa0c Level-0 table #346: started
-2025/04/07-17:24:14.696 aa0c Level-0 table #346: 633888 bytes OK
-2025/04/07-17:24:14.698 aa0c Delete type=0 #338
-2025/04/07-17:24:14.699 aa0c Manual compaction at level-0 from '\x00e\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00f\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/04/07-17:24:16.234 517c Compacting 1@1 + 4@2 files
-2025/04/07-17:24:16.316 517c Generated table #347@1: 38192 keys, 2194147 bytes
-2025/04/07-17:24:16.357 517c Generated table #348@1: 6735 keys, 2145801 bytes
-2025/04/07-17:24:16.438 517c Generated table #349@1: 63639 keys, 2209997 bytes
-2025/04/07-17:24:16.504 517c Generated table #350@1: 63152 keys, 1252301 bytes
-2025/04/07-17:24:16.504 517c Compacted 1@1 + 4@2 files => 7802246 bytes
-2025/04/07-17:24:16.505 517c compacted to: files[ 0 0 4 0 0 0 0 ]
-2025/04/07-17:24:16.505 517c Delete type=2 #340
-2025/04/07-17:24:16.505 517c Delete type=2 #341
-2025/04/07-17:24:16.505 517c Delete type=2 #342
-2025/04/07-17:24:16.505 517c Delete type=2 #343
-2025/04/07-17:24:16.505 517c Delete type=2 #346
+2025/04/07-17:29:08.671 ac60 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/07-17:29:08.671 ac60 Recovering log #345
+2025/04/07-17:29:08.726 ac60 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000345.log 
+2025/04/07-17:29:10.140 7b34 Manual compaction at level-0 from '\x00f\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00g\x00\x00\x00' @ 0 : 0; will stop at (end)
