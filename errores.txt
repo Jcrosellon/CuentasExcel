@@ -8,3 +8,15 @@
     at async ExecutionContext.evaluate (C:\Users\JoseRosellon\CuentasExcel\node_modules\puppeteer-core\lib\cjs\puppeteer\common\ExecutionContext.js:107:16)
     at async Client.sendMessage (C:\Users\JoseRosellon\CuentasExcel\node_modules\whatsapp-web.js\src\Client.js:950:28)
 
+🕓 2025-04-07T10:38:35.209-05:00 - ❌ Promesa no manejada (unhandledRejection)
+🛠️ Detalles: Error: net::ERR_NAME_NOT_RESOLVED at https://web.whatsapp.com/
+    at navigate (C:\Users\JoseRosellon\CuentasExcel\node_modules\puppeteer-core\lib\cjs\puppeteer\common\Frame.js:235:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Frame.goto (C:\Users\JoseRosellon\CuentasExcel\node_modules\puppeteer-core\lib\cjs\puppeteer\common\Frame.js:205:21)
+    at async CDPPage.goto (C:\Users\JoseRosellon\CuentasExcel\node_modules\puppeteer-core\lib\cjs\puppeteer\common\Page.js:1083:16)
+    at async Client.initialize (C:\Users\JoseRosellon\CuentasExcel\node_modules\whatsapp-web.js\src\Client.js:336:9)
+
+🕓 2025-04-07T11:41:56.397-05:00 - ❌ Promesa no manejada (unhandledRejection)
+🛠️ Detalles: ReferenceError: Cannot access 'cuentasUsuario' before initialization
+    at Client.<anonymous> (C:\Users\JoseRosellon\CuentasExcel\index.js:207:23)
+

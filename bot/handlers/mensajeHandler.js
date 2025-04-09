@@ -3,7 +3,13 @@
 const fs = require("fs");
 const { DateTime } = require("luxon");
 const { buscarProductoPorNumero, obtenerCatalogoTexto, obtenerValorProductoPorNumero } = require("../utils/catalogoUtils");
-const { yaFueConfirmado, yaRespondido, marcarRespondido } = require("../utils/respuestasManager");
+const {
+  guardarRespuesta,
+  yaFueConfirmado,
+  yaRespondido,
+  marcarRespondido
+} = require("../utils/respuestasManager");
+
 const rutaMensajesEnviados = "./mensajesEnviados.json";
 const rutaPendientes = "./pendientes.json";
 

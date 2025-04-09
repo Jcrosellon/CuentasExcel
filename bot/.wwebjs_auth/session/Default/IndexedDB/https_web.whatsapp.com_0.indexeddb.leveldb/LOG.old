@@ -1,4 +1,24 @@
-2025/04/07-17:29:08.671 ac60 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/04/07-17:29:08.671 ac60 Recovering log #345
-2025/04/07-17:29:08.726 ac60 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000345.log 
-2025/04/07-17:29:10.140 7b34 Manual compaction at level-0 from '\x00f\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00g\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/09-17:37:19.650 1e264 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/09-17:37:19.656 1e264 Recovering log #365
+2025/04/09-17:37:19.742 1e264 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000365.log 
+2025/04/09-17:37:19.742 1e264 Delete type=2 #360
+2025/04/09-17:37:19.742 1e264 Delete type=2 #361
+2025/04/09-17:37:19.742 1e264 Delete type=2 #362
+2025/04/09-17:37:19.742 1e264 Delete type=2 #363
+2025/04/09-17:37:19.742 1e264 Delete type=2 #366
+2025/04/09-17:37:23.995 1e0b4 Level-0 table #373: started
+2025/04/09-17:37:24.030 1e0b4 Level-0 table #373: 523848 bytes OK
+2025/04/09-17:37:24.039 1e0b4 Delete type=0 #365
+2025/04/09-17:37:24.040 1e0b4 Manual compaction at level-0 from '\x00j\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00k\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/09-17:37:25.629 1a854 Compacting 1@1 + 4@2 files
+2025/04/09-17:37:25.724 1a854 Generated table #374@1: 43617 keys, 2199867 bytes
+2025/04/09-17:37:25.753 1a854 Generated table #375@1: 1477 keys, 2131858 bytes
+2025/04/09-17:37:25.843 1a854 Generated table #376@1: 48941 keys, 2201278 bytes
+2025/04/09-17:37:25.946 1a854 Generated table #377@1: 87528 keys, 1741337 bytes
+2025/04/09-17:37:25.946 1a854 Compacted 1@1 + 4@2 files => 8274340 bytes
+2025/04/09-17:37:25.947 1a854 compacted to: files[ 0 0 4 0 0 0 0 ]
+2025/04/09-17:37:25.947 1a854 Delete type=2 #367
+2025/04/09-17:37:25.947 1a854 Delete type=2 #368
+2025/04/09-17:37:25.947 1a854 Delete type=2 #369
+2025/04/09-17:37:25.947 1a854 Delete type=2 #370
+2025/04/09-17:37:25.947 1a854 Delete type=2 #373
