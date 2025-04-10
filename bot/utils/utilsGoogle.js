@@ -118,6 +118,61 @@ async function actualizarRespuestaEnGoogle(numero, respuesta, fecha, referencia 
   }
 }
 
+async function actualizarFilaExistenteEnGoogleSheets(datos) {
+  try {
+    const sheets = await getSheet();
+    const hoja = config.hojaExcel;
+
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${hoja}!A2:N`,
+    });
+
+    const rows = res.data.values || [];
+    const numeroLimpio = datos.numero.replace(/\D/g, "");
+    let rowIndex = -1;
+
+    for (let i = 0; i < rows.length; i++) {
+      const celdaNumero = (rows[i][10] || "").replace(/\D/g, ""); // Columna "NUMERO WHATSAPP"
+      if (celdaNumero.includes(numeroLimpio) && (rows[i][6] || "").toUpperCase() === datos.cuenta.toUpperCase()) {
+        rowIndex = i + 2; // +2 por encabezado
+        break;
+      }
+    }
+
+    if (rowIndex === -1) {
+      console.warn("⚠️ No se encontró la fila para actualizar renovación:", datos.numero, datos.cuenta);
+      return false;
+    }
+
+    const updates = [
+      { col: "C", val: datos.fechaInicio },      // FECHA INICIO
+      { col: "D", val: datos.fechaFinal },       // FECHA FINAL
+      { col: "L", val: datos.respuesta },        // RESPUESTA
+      { col: "M", val: datos.fechaRespuesta },   // FECHA RESPUESTA
+      { col: "N", val: datos.referencia }        // COMPROBANTE
+    ];
+
+    await sheets.spreadsheets.values.batchUpdate({
+      spreadsheetId: SPREADSHEET_ID,
+      requestBody: {
+        data: updates.map(u => ({
+          range: `${hoja}!${u.col}${rowIndex}`,
+          values: [[u.val]]
+        })),
+        valueInputOption: "USER_ENTERED",
+      },
+    });
+
+    console.log(`✅ Fila actualizada en Google Sheets para renovación (fila ${rowIndex})`);
+    return true;
+  } catch (error) {
+    console.error("❌ Error actualizando fila existente en Google Sheets:", error.message);
+    return false;
+  }
+}
+
+
 async function agregarNuevaFilaEnGoogleSheets(pendiente) {
   try {
     const sheets = await getSheet();
@@ -161,4 +216,5 @@ module.exports = {
   leerClientesGoogle,
   actualizarRespuestaEnGoogle,
   agregarNuevaFilaEnGoogleSheets,
+  actualizarFilaExistenteEnGoogleSheets // <- AÑADE ESTO
 };

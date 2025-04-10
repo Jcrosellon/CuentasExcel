@@ -12,6 +12,7 @@ const {
 
 const rutaMensajesEnviados = "./mensajesEnviados.json";
 const rutaPendientes = "./pendientes.json";
+const rutaPendienteActual = "./pendiente_actual.json";
 
 async function manejarMensajeTexto(msg, numero, texto, cuentasUsuario, client, adminPhone) {
   const textoLimpio = texto.toLowerCase();
@@ -25,36 +26,32 @@ async function manejarMensajeTexto(msg, numero, texto, cuentasUsuario, client, a
       const valorProducto = obtenerValorProductoPorNumero(numeroPedido);
 
       if (producto) {
-        await client.sendMessage(numero + "@c.us", `🛍️ Has elegido:\n${producto}\n\n💳 Realiza el pago a *Nequi o Daviplata: 3183192913* y envía el pantallazo por aquí. ¡Gracias por tu compra! 🙌`);
+        await client.sendMessage(numero + "@c.us", `🛙 Has elegido:\n${producto}\n\n💳 Realiza el pago a *Nequi o Daviplata: 3183192913* y envía el pantallazo por aquí. ¡Gracias por tu compra! 🙌`);
 
-        let pendientes = fs.existsSync(rutaPendientes) ? JSON.parse(fs.readFileSync(rutaPendientes)) : [];
-        const referenciaTemporal = `NUEVO-${DateTime.now().toMillis()}`;
-
-        pendientes.push({
+        // Guardar en pendiente_actual.json
+        const pendiente = {
           numero,
-          referencia: referenciaTemporal,
-          fecha: DateTime.now().toISO(),
+          producto: producto.split("-")[0].trim().toUpperCase(),
+          valor: valorProducto || "20000",
           nombre: "Nuevo Cliente",
-          cuenta: producto.split("–")[0].trim().toUpperCase(),
           usuario: "",
-          esNuevo: true,
-          valor: valorProducto || ""
-        });
+          fecha: DateTime.now().toISO()
+        };
 
-        fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
-        console.log("🔎 Producto seleccionado por cliente nuevo:", numeroPedido);
+        fs.writeFileSync(rutaPendienteActual, JSON.stringify(pendiente, null, 2));
+        console.log("✨ Guardado en pendiente_actual.json:", pendiente);
+
         return;
       }
     }
 
-    await client.sendMessage(numero + "@c.us", `¡Hola! 👋 Bienvenido a *Roussillon Technology*.`);
+    await client.sendMessage(numero + "@c.us", `👋¡Hola! Bienvenido a *Roussillon Technology*.`);
     await client.sendMessage(numero + "@c.us", "📦 Este es nuestro catálogo de productos. Selecciona el número del que te interese:");
     const catalogo = obtenerCatalogoTexto();
     await client.sendMessage(numero + "@c.us", catalogo);
     return;
   }
 
-  // Cliente existente
   const cliente = cuentasUsuario[0];
   const yaPago = cliente["RESPUESTA"]?.toLowerCase().includes("comprobante");
 
@@ -77,7 +74,7 @@ async function manejarMensajeTexto(msg, numero, texto, cuentasUsuario, client, a
 
   if (yaPago) {
     if (!isNaN(numeroPedido) && producto) {
-      await client.sendMessage(numero + "@c.us", `🛍️ Has elegido:\n${producto}\n\n💳 Realiza el pago y envía el pantallazo aquí para procesarlo. 🙌`);
+      await client.sendMessage(numero + "@c.us", `🛙 Has elegido:\n${producto}\n\n💳 Realiza el pago y envía el pantallazo aquí para procesarlo. 🙌`);
       await client.sendMessage(adminPhone, `🆕 Cliente *${numero}* ya activo quiere otra cuenta:\n${producto}`);
       return;
     }
@@ -95,7 +92,7 @@ async function manejarMensajeTexto(msg, numero, texto, cuentasUsuario, client, a
 
   if (yaFueConfirmado(numero)) {
     if (!isNaN(numeroPedido) && producto) {
-      await client.sendMessage(numero + "@c.us", `🛍️ Has elegido:\n${producto}\n\n💳 Realiza el pago y envía el pantallazo aquí.`);
+      await client.sendMessage(numero + "@c.us", `🛙 Has elegido:\n${producto}\n\n💳 Realiza el pago y envía el pantallazo aquí.`);
       await client.sendMessage(adminPhone, `📦 Cliente *${numero}* confirmado quiere:\n${producto}`);
       return;
     }
@@ -112,7 +109,6 @@ async function manejarMensajeTexto(msg, numero, texto, cuentasUsuario, client, a
     return;
   }
 
-  // Reenviar último mensaje si hay
   let historial = {};
   if (fs.existsSync(rutaMensajesEnviados)) {
     try {
@@ -124,7 +120,7 @@ async function manejarMensajeTexto(msg, numero, texto, cuentasUsuario, client, a
   }
 
   if (!isNaN(numeroPedido) && producto) {
-    await client.sendMessage(numero + "@c.us", `🛍️ Has elegido:\n${producto}\n\n💳 Realiza el pago y envía el pantallazo aquí.`);
+    await client.sendMessage(numero + "@c.us", `🛙 Has elegido:\n${producto}\n\n💳 Realiza el pago y envía el pantallazo aquí.`);
     await client.sendMessage(adminPhone, `📦 Cliente *${numero}* está interesado en:\n${producto}`);
     return;
   }

@@ -24,11 +24,8 @@ client.on("qr", (qr) => {
 client.on("ready", async () => {
   console.log("✅ Bot listo. Programando tareas...");
 
-  // 🔥 Lógica de prueba: solo enviar vencimientos a un número específico
-  await procesarVencimientos(client);
-
-  // ⏰ Cron programado real para producción
-  enviarVencimientosProgramados(client);
+  await procesarVencimientos(client, "573114207673");
+enviarVencimientosProgramados(client);
 });
 
 client.on("message", async (msg) => {

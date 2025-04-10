@@ -1,24 +1,25 @@
-2025/04/09-17:37:19.650 1e264 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/04/09-17:37:19.656 1e264 Recovering log #365
-2025/04/09-17:37:19.742 1e264 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000365.log 
-2025/04/09-17:37:19.742 1e264 Delete type=2 #360
-2025/04/09-17:37:19.742 1e264 Delete type=2 #361
-2025/04/09-17:37:19.742 1e264 Delete type=2 #362
-2025/04/09-17:37:19.742 1e264 Delete type=2 #363
-2025/04/09-17:37:19.742 1e264 Delete type=2 #366
-2025/04/09-17:37:23.995 1e0b4 Level-0 table #373: started
-2025/04/09-17:37:24.030 1e0b4 Level-0 table #373: 523848 bytes OK
-2025/04/09-17:37:24.039 1e0b4 Delete type=0 #365
-2025/04/09-17:37:24.040 1e0b4 Manual compaction at level-0 from '\x00j\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00k\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/04/09-17:37:25.629 1a854 Compacting 1@1 + 4@2 files
-2025/04/09-17:37:25.724 1a854 Generated table #374@1: 43617 keys, 2199867 bytes
-2025/04/09-17:37:25.753 1a854 Generated table #375@1: 1477 keys, 2131858 bytes
-2025/04/09-17:37:25.843 1a854 Generated table #376@1: 48941 keys, 2201278 bytes
-2025/04/09-17:37:25.946 1a854 Generated table #377@1: 87528 keys, 1741337 bytes
-2025/04/09-17:37:25.946 1a854 Compacted 1@1 + 4@2 files => 8274340 bytes
-2025/04/09-17:37:25.947 1a854 compacted to: files[ 0 0 4 0 0 0 0 ]
-2025/04/09-17:37:25.947 1a854 Delete type=2 #367
-2025/04/09-17:37:25.947 1a854 Delete type=2 #368
-2025/04/09-17:37:25.947 1a854 Delete type=2 #369
-2025/04/09-17:37:25.947 1a854 Delete type=2 #370
-2025/04/09-17:37:25.947 1a854 Delete type=2 #373
+2025/04/10-17:01:31.571 2c74 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/10-17:01:31.576 2c74 Recovering log #696
+2025/04/10-17:01:31.713 2c74 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000696.log 
+2025/04/10-17:01:33.173 6e18 Level-0 table #707: started
+2025/04/10-17:01:33.202 6e18 Level-0 table #707: 1242055 bytes OK
+2025/04/10-17:01:33.204 6e18 Delete type=0 #696
+2025/04/10-17:01:33.205 51ec Manual compaction at level-0 from '\x00\x9b\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x9c\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/10-17:01:34.941 90d4 Compacting 1@1 + 7@2 files
+2025/04/10-17:01:35.090 90d4 Generated table #708@1: 88464 keys, 2237515 bytes
+2025/04/10-17:01:35.176 90d4 Generated table #709@1: 20835 keys, 2202702 bytes
+2025/04/10-17:01:35.199 90d4 Generated table #710@1: 733 keys, 2121602 bytes
+2025/04/10-17:01:35.246 90d4 Generated table #711@1: 13623 keys, 2162592 bytes
+2025/04/10-17:01:35.348 90d4 Generated table #712@1: 33167 keys, 2169143 bytes
+2025/04/10-17:01:35.526 90d4 Generated table #713@1: 113811 keys, 2268188 bytes
+2025/04/10-17:01:35.552 90d4 Generated table #714@1: 18105 keys, 364422 bytes
+2025/04/10-17:01:35.552 90d4 Compacted 1@1 + 7@2 files => 13526164 bytes
+2025/04/10-17:01:35.553 90d4 compacted to: files[ 0 0 7 0 0 0 0 ]
+2025/04/10-17:01:35.554 90d4 Delete type=2 #698
+2025/04/10-17:01:35.554 90d4 Delete type=2 #699
+2025/04/10-17:01:35.554 90d4 Delete type=2 #700
+2025/04/10-17:01:35.554 90d4 Delete type=2 #701
+2025/04/10-17:01:35.554 90d4 Delete type=2 #702
+2025/04/10-17:01:35.554 90d4 Delete type=2 #703
+2025/04/10-17:01:35.554 90d4 Delete type=2 #704
+2025/04/10-17:01:35.554 90d4 Delete type=2 #707

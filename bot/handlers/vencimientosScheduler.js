@@ -1,11 +1,12 @@
 // /bot/handlers/vencimientosScheduler.js
 const cron = require("node-cron");
 const { DateTime } = require("luxon");
-const { leerClientesGoogle  } = require("../utils/utilsGoogle")
+const { leerClientesGoogle } = require("../utils/utilsGoogle")
 const { formatearPesosColombianos, esNumeroValido } = require("../utils/helpers");
 const fs = require("fs");
 
 const rutaMensajesEnviados = "./mensajesEnviados.json";
+const rutaPendientes = "./pendientes.json";
 
 function agruparClientesPorNumero(clientes) {
   const mapa = {};
@@ -29,6 +30,27 @@ function agruparClientesPorNumero(clientes) {
   return mapa;
 }
 
+function guardarPendiente(numero, nombre, cuenta) {
+  let pendientes = fs.existsSync(rutaPendientes) ? JSON.parse(fs.readFileSync(rutaPendientes)) : [];
+
+  const yaExiste = pendientes.some(p => p.numero === numero && p.cuenta === cuenta.cuenta && !p.confirmado);
+  if (!yaExiste) {
+    pendientes.push({
+      numero,
+      nombre,
+      cuenta: cuenta.cuenta,
+      usuario: "",
+      valor: cuenta.valor,
+      referencia: `AUTO-${Date.now()}`,
+      fecha: DateTime.now().toISO(),
+      imagen: "",
+      confirmado: false,
+      esNuevo: false
+    });
+    fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
+  }
+}
+
 function enviarMensajeVencimiento(client) {
   return async (numero, nombre, cuentas, cuando) => {
     let mensaje = `🌙 Buenas tardes ${nombre}, RoussillonTechnology te recuerda que ${cuando} se vencen los siguientes servicios:\n\n`;
@@ -36,6 +58,7 @@ function enviarMensajeVencimiento(client) {
     for (const cuenta of cuentas) {
       mensaje += `🔸 ${cuenta.cuenta} ( ${cuenta.dispositivo} ): $${formatearPesosColombianos(cuenta.valor)}\n`;
       total += parseInt(cuenta.valor);
+      guardarPendiente(numero, nombre, cuenta);
     }
     mensaje += `\n💰 Total a pagar: $${formatearPesosColombianos(total)}\n\n¿Deseas continuar? ✨\nResponde con *SI*✅ o *NO*❌`;
 
@@ -69,6 +92,8 @@ function enviarMensajeMora(client) {
       `💰 Total a pagar: $${formatearPesosColombianos(cuenta.valor)}\n\n` +
       `¿Si deseas continuar? ✨\nResponde con *SI*✅ o *NO*❌`;
 
+    guardarPendiente(numero, nombre, cuenta);
+
     if (esNumeroValido(numero)) {
       await client.sendMessage(numero + "@c.us", mensaje);
 
@@ -89,28 +114,28 @@ function enviarMensajeMora(client) {
   };
 }
 
-
-function enviarVencimientosProgramados(client) {
+function enviarVencimientosProgramados(client, numeroDePrueba = null) {
   console.log("🔍 Ejecutando función enviarVencimientosProgramados...");
 
   const enviarVencimiento = enviarMensajeVencimiento(client);
   const enviarMora = enviarMensajeMora(client);
 
-  cron.schedule("0 10 * * *", async () => {
+  cron.schedule("0 18 * * *", async () => {
     try {
+      await client.sendMessage("573114207673@c.us", "📅 Iniciando envío automático de vencimientos programados (18:00). Este es un mensaje de prueba de seguimiento programado. A continuación, los vencimientos reales:");
+
       const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
       const clientes = await leerClientesGoogle();
       console.log(`📄 Se leyeron ${clientes.length} clientes desde Google Sheets`);
 
       const agrupados = agruparClientesPorNumero(clientes);
 
-      const numeroDePrueba = "573114207673"; // ← aquí pones tu número sin @c.us
+      for (const numero in agrupados) {
+        if (numeroDePrueba && numero !== numeroDePrueba) continue;
 
-for (const numero in agrupados) {
-  if (numero !== numeroDePrueba) continue; // ⛔️ Salta los demás
-  console.log("👤 Procesando cliente de prueba:", numero);
+        console.log("👤 Procesando cliente:", numero);
 
-  const cliente = agrupados[numero];
+        const cliente = agrupados[numero];
         const cuentas = cliente.cuentas;
         let vencenManana = [];
         let vencenHoy = [];
@@ -121,11 +146,8 @@ for (const numero in agrupados) {
           const rawFecha = cuenta.fechaFinal;
 
           if (typeof rawFecha === "string") {
-            const partes = rawFecha.split("/");
-            const dia = partes[0].padStart(2, "0");
-            const mes = partes[1].padStart(2, "0");
-            const anio = partes[2];
-            const fechaStr = `${dia}/${mes}/${anio}`;
+            const [dia, mes, anio] = rawFecha.split("/");
+            const fechaStr = `${dia.padStart(2, "0")}/${mes.padStart(2, "0")}/${anio}`;
             fechaFinal = DateTime.fromFormat(fechaStr, "dd/MM/yyyy", { zone: "America/Bogota" });
           } else if (typeof rawFecha === "number") {
             fechaFinal = DateTime.fromJSDate(new Date(Math.round((rawFecha - 25569 + 1) * 86400 * 1000))).setZone("America/Bogota").startOf("day");
@@ -138,23 +160,22 @@ for (const numero in agrupados) {
           if (!fechaFinal || !fechaFinal.isValid) continue;
 
           const finalDia = fechaFinal.startOf("day");
-const diferencia = Math.floor(finalDia.diff(hoy, "days").days);
+          const diferencia = Math.floor(finalDia.diff(hoy, "days").days);
 
-console.log(`📅 Cliente: ${cliente.nombre} - Fecha Final: ${finalDia.toFormat("dd/MM/yyyy")} - Hoy: ${hoy.toFormat("dd/MM/yyyy")} - Diff: ${diferencia}`);
-
-if (diferencia === 1) vencenManana.push(cuenta);
-else if (diferencia === 0) vencenHoy.push(cuenta);
-else if (diferencia < 0) enMora.push({ ...cuenta, dias: Math.abs(diferencia) });
+          if (diferencia === 1) vencenManana.push(cuenta);
+          else if (diferencia === 0) vencenHoy.push(cuenta);
+          else if (diferencia < 0) enMora.push({ ...cuenta, dias: Math.abs(diferencia) });
         }
 
         if (vencenManana.length > 0) await enviarVencimiento(numero, cliente.nombre, vencenManana, "MAÑANA");
         if (vencenHoy.length > 0) await enviarVencimiento(numero, cliente.nombre, vencenHoy, "HOY");
         for (const mora of enMora) await enviarMora(numero, cliente.nombre, mora);
-        console.log("🗓️ Vencimientos HOY:", vencenHoy.length);
-console.log("🗓️ Vencimientos MAÑANA:", vencenManana.length);
-console.log("💀 En MORA:", enMora.length);
 
+        console.log("🗓️ Vencimientos HOY:", vencenHoy.length);
+        console.log("🗓️ Vencimientos MAÑANA:", vencenManana.length);
+        console.log("💀 En MORA:", enMora.length);
       }
+
     } catch (err) {
       console.error("❌ Error en ejecución del cron diario:", err);
     }
@@ -218,7 +239,6 @@ async function procesarVencimientos(client, numeroDePrueba = null) {
     for (const mora of enMora) await enviarMora(numero, cliente.nombre, mora);
   }
 }
-
 
 module.exports = {
   enviarVencimientosProgramados,

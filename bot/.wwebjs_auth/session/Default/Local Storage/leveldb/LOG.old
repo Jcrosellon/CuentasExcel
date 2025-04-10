@@ -1,5 +1,3 @@
-2025/04/09-17:37:18.889 15a04 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
-2025/04/09-17:37:18.893 15a04 Recovering log #4
-2025/04/09-17:37:18.893 15a04 Level-0 table #6: started
-2025/04/09-17:37:18.897 15a04 Level-0 table #6: 14699 bytes OK
-2025/04/09-17:37:18.901 15a04 Delete type=0 #4
+2025/04/10-17:01:31.059 2c74 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
+2025/04/10-17:01:31.063 2c74 Recovering log #22
+2025/04/10-17:01:31.063 2c74 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\Local Storage\leveldb/000022.log 
