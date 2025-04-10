@@ -18,39 +18,43 @@ async function manejarMensajeTexto(msg, numero, texto, cuentasUsuario, client, a
   const textoLimpio = texto.toLowerCase();
   const fechaActual = DateTime.now().setZone("America/Bogota").toISODate();
 
-  if (cuentasUsuario.length === 0) {
-    const numeroPedido = parseInt(texto.replace(/[^\d]/g, ""));
+ // Reemplaza el bloque completo if (cuentasUsuario.length === 0) por este:
+if (cuentasUsuario.length === 0) {
+  const numeroPedido = parseInt(texto.replace(/[^\d]/g, ""));
 
-    if (!isNaN(numeroPedido)) {
-      const producto = buscarProductoPorNumero(numeroPedido);
-      const valorProducto = obtenerValorProductoPorNumero(numeroPedido);
+  if (!isNaN(numeroPedido)) {
+    const producto = buscarProductoPorNumero(numeroPedido);
+    const valorProducto = obtenerValorProductoPorNumero(numeroPedido);
 
-      if (producto) {
-        await client.sendMessage(numero + "@c.us", `🛙 Has elegido:\n${producto}\n\n💳 Realiza el pago a *Nequi o Daviplata: 3183192913* y envía el pantallazo por aquí. ¡Gracias por tu compra! 🙌`);
+    if (producto) {
+      await client.sendMessage(numero + "@c.us", `🛙 Has elegido:\n${producto}\n\n💳 Realiza el pago a *Nequi o Daviplata: 3183192913* y envía el pantallazo por aquí. ¡Gracias por tu compra! 🙌`);
 
-        // Guardar en pendiente_actual.json
-        const pendiente = {
-          numero,
-          producto: producto.split("-")[0].trim().toUpperCase(),
-          valor: valorProducto || "20000",
-          nombre: "Nuevo Cliente",
-          usuario: "",
-          fecha: DateTime.now().toISO()
-        };
+      // Guardar como pendiente de nueva compra
+      const pendiente = {
+        numero,
+        cuenta: producto.split("-")[0].trim().toUpperCase(),
+        valor: valorProducto || "20000",
+        nombre: "Nuevo Cliente",
+        usuario: "",
+        fecha: DateTime.now().toISO(),
+        confirmado: false
+      };
 
-        fs.writeFileSync(rutaPendienteActual, JSON.stringify(pendiente, null, 2));
-        console.log("✨ Guardado en pendiente_actual.json:", pendiente);
+      fs.writeFileSync(rutaPendienteActual, JSON.stringify(pendiente, null, 2));
+      console.log("✨ Guardado en pendiente_actual.json:", pendiente);
 
-        return;
-      }
+      return;
     }
-
-    await client.sendMessage(numero + "@c.us", `👋¡Hola! Bienvenido a *Roussillon Technology*.`);
-    await client.sendMessage(numero + "@c.us", "📦 Este es nuestro catálogo de productos. Selecciona el número del que te interese:");
-    const catalogo = obtenerCatalogoTexto();
-    await client.sendMessage(numero + "@c.us", catalogo);
-    return;
   }
+
+  // Si no eligió un número válido
+  await client.sendMessage(numero + "@c.us", `👋¡Hola! Bienvenido a *Roussillon Technology*.`);
+  await client.sendMessage(numero + "@c.us", "📦 Este es nuestro catálogo de productos. Selecciona el número del que te interese:");
+  const catalogo = obtenerCatalogoTexto();
+  await client.sendMessage(numero + "@c.us", catalogo);
+  return;
+}
+
 
   const cliente = cuentasUsuario[0];
   const yaPago = cliente["RESPUESTA"]?.toLowerCase().includes("comprobante");

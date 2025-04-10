@@ -1,4 +1,25 @@
-2025/04/10-17:38:04.430 2578 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/04/10-17:38:04.431 2578 Recovering log #736
-2025/04/10-17:38:04.507 2578 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000736.log 
-2025/04/10-17:38:06.054 2578 Manual compaction at level-0 from '\x00\xa0\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\xa1\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/10-17:54:20.885 15a4 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/10-17:54:20.886 15a4 Recovering log #775
+2025/04/10-17:54:20.962 15a4 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000775.log 
+2025/04/10-17:54:22.468 812c Level-0 table #786: started
+2025/04/10-17:54:22.486 812c Level-0 table #786: 410845 bytes OK
+2025/04/10-17:54:22.488 812c Delete type=0 #775
+2025/04/10-17:54:22.489 812c Manual compaction at level-0 from '\x00\xa4\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\xa5\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/10-17:54:24.235 15a4 Compacting 1@1 + 7@2 files
+2025/04/10-17:54:24.411 15a4 Generated table #787@1: 88164 keys, 2237538 bytes
+2025/04/10-17:54:24.513 15a4 Generated table #788@1: 32346 keys, 2221556 bytes
+2025/04/10-17:54:24.544 15a4 Generated table #789@1: 1108 keys, 2126111 bytes
+2025/04/10-17:54:24.576 15a4 Generated table #790@1: 1298 keys, 2123674 bytes
+2025/04/10-17:54:24.696 15a4 Generated table #791@1: 24493 keys, 2186165 bytes
+2025/04/10-17:54:24.847 15a4 Generated table #792@1: 91621 keys, 2238130 bytes
+2025/04/10-17:54:24.975 15a4 Generated table #793@1: 70231 keys, 1402328 bytes
+2025/04/10-17:54:24.975 15a4 Compacted 1@1 + 7@2 files => 14535502 bytes
+2025/04/10-17:54:24.980 15a4 compacted to: files[ 0 0 7 0 0 0 0 ]
+2025/04/10-17:54:24.980 15a4 Delete type=2 #777
+2025/04/10-17:54:24.980 15a4 Delete type=2 #778
+2025/04/10-17:54:24.980 15a4 Delete type=2 #779
+2025/04/10-17:54:24.980 15a4 Delete type=2 #780
+2025/04/10-17:54:24.980 15a4 Delete type=2 #781
+2025/04/10-17:54:24.980 15a4 Delete type=2 #782
+2025/04/10-17:54:24.980 15a4 Delete type=2 #783
+2025/04/10-17:54:24.980 15a4 Delete type=2 #786
