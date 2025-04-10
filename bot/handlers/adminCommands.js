@@ -98,20 +98,32 @@ module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
 
   const pendiente = pendientes.find(p => !p.confirmado);
 
+  if (["rechazado", "❌"].includes(textoLimpio) && pendiente) {
+    pendiente.rechazado = true;
+    pendiente.fechaRechazo = DateTime.now().toISO();
+    fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
+
+    if (pendiente.imagen && fs.existsSync(pendiente.imagen)) {
+      fs.unlinkSync(pendiente.imagen);
+    }
+
+    await client.sendMessage(pendiente.numero + "@c.us", "❌ Tu comprobante fue rechazado por el administrador. Por favor revisa el valor pagado y vuelve a intentarlo.");
+    await msg.reply("❌ Rechazo registrado y notificado al cliente.");
+    return;
+  }
+
   if (["confirmado", "✅"].includes(textoLimpio) && pendiente) {
     pendiente.confirmado = true;
     pendiente.fechaConfirmacion = DateTime.now().toISO();
     fs.writeFileSync(rutaPendienteActual, JSON.stringify(pendiente, null, 2));
-  
-    // 🔥 Eliminar todos los duplicados del mismo número o referencia
+
     pendientes = pendientes.filter(p => p.referencia !== pendiente.referencia && p.numero !== pendiente.numero);
     fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
-  
-    // 🧹 Eliminar imagen temporal si existe
+
     if (pendiente.imagen && fs.existsSync(pendiente.imagen)) {
       fs.unlinkSync(pendiente.imagen);
     }
-  
+
     if (pendiente.esNuevo) {
       const refCliente = pendiente.referencia?.startsWith("AUTO-") ? "" : `Ref: *${pendiente.referencia}*. `;
       await client.sendMessage(pendiente.numero + "@c.us", `✅ Tu pago ha sido confirmado. ${refCliente}¡Gracias por tu compra! 🎉`);
@@ -120,10 +132,9 @@ module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
       const hoy = DateTime.now().setZone("America/Bogota");
       const fechaInicio = hoy.toFormat("dd/LL/yyyy");
       const fechaFinal = hoy.plus({ days: 30 }).toFormat("dd/LL/yyyy");
-      
-      // ✅ Evitar guardar referencias AUTO- en el documento
+
       const referencia = pendiente.referencia?.startsWith("AUTO-") ? "" : pendiente.referencia;
-  
+
       const filaActualizada = {
         numero: pendiente.numero,
         cuenta: pendiente.cuenta,
@@ -133,37 +144,36 @@ module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
         fechaRespuesta: fechaInicio,
         referencia
       };
-  
+
       await actualizarFilaExistenteEnGoogleSheets(filaActualizada);
-  
+
       const mensaje = `🎉 *Gracias por continuar con nosotros.* Tu renovación fue exitosa.\nSi deseas adquirir un nuevo servicio, aquí está nuestro catálogo actualizado:`;
       await client.sendMessage(pendiente.numero + "@c.us", mensaje);
       await client.sendMessage(pendiente.numero + "@c.us", obtenerCatalogoTexto());
       await client.sendMessage(adminPhone, `🔄 Renovación registrada automáticamente para *${pendiente.nombre}* - *${pendiente.cuenta}*.`);
     }
-  
+
     return;
   }
-  
 
   if (fs.existsSync(rutaPendienteActual)) {
     const pendiente = JSON.parse(fs.readFileSync(rutaPendienteActual, "utf8"));
     const patron = /^(.+?)\s*\n\s*usuario[:\s]+(.+)\s*\n\s*clave[:\s]+(.+)/i;
     const match = msg.body.trim().match(patron);
-  
+
     if (!match) {
       await client.sendMessage(adminPhone, `❌ Formato no reconocido. Asegúrate de escribir:\n\nDISNEY\nusuario: juan123\nclave: abc456`);
       return;
     }
-  
+
     const cuenta = match[1].trim().toUpperCase();
     const usuarioCuenta = match[2].trim();
     const claveCuenta = match[3].trim();
-  
+
     const hoy = DateTime.now().setZone("America/Bogota");
     const fechaInicio = hoy.toFormat("dd/LL/yyyy");
     const fechaFinal = hoy.plus({ days: 30 }).toFormat("dd/LL/yyyy");
-  
+
     const fila = {
       nombre: pendiente.nombre,
       alias: "",
@@ -178,18 +188,16 @@ module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
       numero: pendiente.numero,
       respuesta: "✅ Comprobante",
       fechaRespuesta: fechaInicio,
-      // Solo guardamos la referencia si no es automática
       referencia: pendiente.referencia?.startsWith("AUTO-") ? "" : pendiente.referencia
     };
-  
+
     await agregarNuevaFilaEnGoogleSheets(fila);
-  
+
     const mensajeCliente = `✅ Tu cuenta ha sido activada:\n\n📺 *${cuenta}*\n👤 Usuario: *${usuarioCuenta}*\n🔐 Clave: *${claveCuenta}*\n\n⚠ *TÉRMINOS Y CONDICIONES*\n📌 USAR LAS PANTALLAS CONTRATADAS\n📌 NO COMPARTIR LA CUENTA\n\n📝 Incumplir estos términos puede generar la pérdida de garantía.\n\nGracias por elegir *Roussillon Technology*. ¡Estamos comprometidos con ofrecerte el mejor servicio!*`;
-  
+
     await client.sendMessage(pendiente.numero + "@c.us", mensajeCliente);
     await client.sendMessage(adminPhone, `✅ Cuenta *${cuenta}* registrada y enviada al cliente *${pendiente.nombre}*.`);
-  
+
     fs.unlinkSync(rutaPendienteActual);
   }
-  
 };
