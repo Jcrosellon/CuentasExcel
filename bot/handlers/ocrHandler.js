@@ -78,11 +78,16 @@ if (filaCoincidente) {
       await client.sendMessage(numero + "@c.us", "🎁 Aquí tienes nuestro catálogo actualizado:");
       await client.sendMessage(numero + "@c.us", obtenerCatalogoTexto());
       await unlink(tempPath).catch(() => {});
-      fs.unlinkSync(rutaPendienteActual); // ✅ limpia el archivo para evitar futuras confusiones
+      
+      // 🔒 Protegido con existsSync por si el archivo ya no existe
+      if (fs.existsSync(rutaPendienteActual)) {
+        fs.unlinkSync(rutaPendienteActual); // ✅ limpia el archivo para evitar futuras confusiones
+      }
+  
       return;
     }
-    
   }
+  
   
 
   console.log("🛑 No se encontró registro previo para este comprobante.");

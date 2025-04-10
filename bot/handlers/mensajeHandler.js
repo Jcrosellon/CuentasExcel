@@ -125,14 +125,15 @@ async function manejarMensajeTexto(msg, numero, texto, cuentasUsuario, client, a
     return;
   }
 
-  const mensajeAnterior = historial[numero];
-  if (mensajeAnterior) {
-    await client.sendMessage(numero + "@c.us", mensajeAnterior);
-  } else {
-    console.warn(`⚠️ No se encontró mensaje anterior para ${numero}`);
-  }
+  // Al final de manejarMensajeTexto
+const mensajeAnterior = historial[numero];
+if (mensajeAnterior) {
+  await client.sendMessage(numero + "@c.us", "🤖 No entendí tu mensaje. Aquí está lo último que te envié:");
+  await client.sendMessage(numero + "@c.us", mensajeAnterior);
+} else {
+  await client.sendMessage(numero + "@c.us", "🤔 No entendí tu mensaje. Escribe *SI*, *NO* o un número del catálogo para continuar.");
 }
-
+}
 module.exports = {
   manejarMensajeTexto
 };

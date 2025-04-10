@@ -1,4 +1,25 @@
-2025/04/10-17:06:26.859 a1e0 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/04/10-17:06:26.860 a1e0 Recovering log #706
-2025/04/10-17:06:27.023 a1e0 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000706.log 
-2025/04/10-17:06:28.545 a1e0 Manual compaction at level-0 from '\x00\x9c\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x9d\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/10-17:09:30.480 3e90 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/10-17:09:30.481 3e90 Recovering log #706
+2025/04/10-17:09:30.684 3e90 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000706.log 
+2025/04/10-17:09:32.156 8a68 Manual compaction at level-0 from '\x00\x9d\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x9e\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/10-17:09:35.889 a328 Level-0 table #717: started
+2025/04/10-17:09:35.918 a328 Level-0 table #717: 1727126 bytes OK
+2025/04/10-17:09:35.920 a328 Delete type=0 #706
+2025/04/10-17:09:36.876 3e90 Compacting 1@1 + 7@2 files
+2025/04/10-17:09:37.020 3e90 Generated table #718@1: 88298 keys, 2236853 bytes
+2025/04/10-17:09:37.111 3e90 Generated table #719@1: 24098 keys, 2208172 bytes
+2025/04/10-17:09:37.132 3e90 Generated table #720@1: 823 keys, 2125257 bytes
+2025/04/10-17:09:37.170 3e90 Generated table #721@1: 10652 keys, 2153628 bytes
+2025/04/10-17:09:37.227 3e90 Generated table #722@1: 24817 keys, 2163200 bytes
+2025/04/10-17:09:37.395 3e90 Generated table #723@1: 113629 keys, 2267122 bytes
+2025/04/10-17:09:37.432 3e90 Generated table #724@1: 31223 keys, 623152 bytes
+2025/04/10-17:09:37.432 3e90 Compacted 1@1 + 7@2 files => 13777384 bytes
+2025/04/10-17:09:37.433 3e90 compacted to: files[ 0 0 7 0 0 0 0 ]
+2025/04/10-17:09:37.434 3e90 Delete type=2 #708
+2025/04/10-17:09:37.434 3e90 Delete type=2 #709
+2025/04/10-17:09:37.434 3e90 Delete type=2 #710
+2025/04/10-17:09:37.434 3e90 Delete type=2 #711
+2025/04/10-17:09:37.434 3e90 Delete type=2 #712
+2025/04/10-17:09:37.434 3e90 Delete type=2 #713
+2025/04/10-17:09:37.434 3e90 Delete type=2 #714
+2025/04/10-17:09:37.434 3e90 Delete type=2 #717

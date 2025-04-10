@@ -1,25 +1,4 @@
-2025/04/10-17:01:31.571 2c74 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/04/10-17:01:31.576 2c74 Recovering log #696
-2025/04/10-17:01:31.713 2c74 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000696.log 
-2025/04/10-17:01:33.173 6e18 Level-0 table #707: started
-2025/04/10-17:01:33.202 6e18 Level-0 table #707: 1242055 bytes OK
-2025/04/10-17:01:33.204 6e18 Delete type=0 #696
-2025/04/10-17:01:33.205 51ec Manual compaction at level-0 from '\x00\x9b\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x9c\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/04/10-17:01:34.941 90d4 Compacting 1@1 + 7@2 files
-2025/04/10-17:01:35.090 90d4 Generated table #708@1: 88464 keys, 2237515 bytes
-2025/04/10-17:01:35.176 90d4 Generated table #709@1: 20835 keys, 2202702 bytes
-2025/04/10-17:01:35.199 90d4 Generated table #710@1: 733 keys, 2121602 bytes
-2025/04/10-17:01:35.246 90d4 Generated table #711@1: 13623 keys, 2162592 bytes
-2025/04/10-17:01:35.348 90d4 Generated table #712@1: 33167 keys, 2169143 bytes
-2025/04/10-17:01:35.526 90d4 Generated table #713@1: 113811 keys, 2268188 bytes
-2025/04/10-17:01:35.552 90d4 Generated table #714@1: 18105 keys, 364422 bytes
-2025/04/10-17:01:35.552 90d4 Compacted 1@1 + 7@2 files => 13526164 bytes
-2025/04/10-17:01:35.553 90d4 compacted to: files[ 0 0 7 0 0 0 0 ]
-2025/04/10-17:01:35.554 90d4 Delete type=2 #698
-2025/04/10-17:01:35.554 90d4 Delete type=2 #699
-2025/04/10-17:01:35.554 90d4 Delete type=2 #700
-2025/04/10-17:01:35.554 90d4 Delete type=2 #701
-2025/04/10-17:01:35.554 90d4 Delete type=2 #702
-2025/04/10-17:01:35.554 90d4 Delete type=2 #703
-2025/04/10-17:01:35.554 90d4 Delete type=2 #704
-2025/04/10-17:01:35.554 90d4 Delete type=2 #707
+2025/04/10-17:06:26.859 a1e0 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/10-17:06:26.860 a1e0 Recovering log #706
+2025/04/10-17:06:27.023 a1e0 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000706.log 
+2025/04/10-17:06:28.545 a1e0 Manual compaction at level-0 from '\x00\x9c\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x9d\x00\x00\x00' @ 0 : 0; will stop at (end)

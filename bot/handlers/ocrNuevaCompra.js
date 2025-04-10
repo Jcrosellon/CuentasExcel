@@ -10,9 +10,8 @@ const rutaPendienteActual = "./pendiente_actual.json";
 
 async function manejarCompraNueva({ client, numero, media, resultado, tempPath, msg, adminPhone }) {
   const refLimpia = limpiarTexto(resultado.referenciaDetectada);
-
-  // 🔍 Verificar si ya está en el documento
   const clientesSheet = await leerClientesGoogle();
+
   const yaConfirmada = clientesSheet.some(c => {
     const refDoc = limpiarTexto(c["COMPROBANTE"]);
     const numDoc = (c["NUMERO WHATSAPP"] || "").replace(/\D/g, "");

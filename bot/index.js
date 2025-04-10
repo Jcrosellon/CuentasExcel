@@ -44,11 +44,13 @@ client.on("message", async (msg) => {
       reenviarMensajeAnterior(client, numero);
       return;
     }
-
+  
+    // Solo si es imagen válida continúa
     await msg.reply("📸 Recibimos tu comprobante. *Validando...*");
-    await manejarMediaComprobante(client, msg, numero, media, [], adminPhone);
+    await manejarMediaComprobante(client, msg, numero, media, cuentasUsuario, adminPhone);
     return;
   }
+  
 
   if (msg.from === adminPhone) {
     await manejarComandosAdmin(msg, client, adminPhone);

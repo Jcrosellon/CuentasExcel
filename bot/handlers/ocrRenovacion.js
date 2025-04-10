@@ -22,7 +22,7 @@ async function manejarRenovacion({ client, numero, media, resultado, tempPath, m
     await fs.promises.unlink(tempPath).catch(() => {});
     return;
   }
-  
+
   const valorEsperado = (pendiente.valor || "20000").toString().replace(/\./g, "");
 
   if (valorDetectado === 0 || isNaN(valorDetectado)) {
@@ -32,7 +32,7 @@ async function manejarRenovacion({ client, numero, media, resultado, tempPath, m
   }
 
   if (valorDetectado < parseFloat(valorEsperado)) {
-    await msg.reply(`❌ Pago rechazado, tu pago es: *${formatearPesosColombianos(valorEsperado)}*.`);
+    await msg.reply(`❌ El pago es insuficiente. El valor esperado es: *${formatearPesosColombianos(valorEsperado)}*.`);
     await fs.promises.unlink(tempPath).catch(() => {});
     return;
   }

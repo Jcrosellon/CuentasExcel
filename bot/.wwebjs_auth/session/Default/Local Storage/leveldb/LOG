@@ -1,3 +1,14 @@
-2025/04/10-17:06:26.328 8a00 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
-2025/04/10-17:06:26.334 8a00 Recovering log #22
-2025/04/10-17:06:26.335 8a00 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\Local Storage\leveldb/000022.log 
+2025/04/10-17:09:29.917 8a68 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
+2025/04/10-17:09:29.918 8a68 Recovering log #22
+2025/04/10-17:09:29.918 8a68 Level-0 table #25: started
+2025/04/10-17:09:29.922 8a68 Level-0 table #25: 17016 bytes OK
+2025/04/10-17:09:29.925 8a68 Delete type=0 #22
+2025/04/10-17:09:29.926 3e90 Compacting 4@0 + 1@1 files
+2025/04/10-17:09:29.930 3e90 Generated table #27@0: 69 keys, 6927 bytes
+2025/04/10-17:09:29.931 3e90 Compacted 4@0 + 1@1 files => 6927 bytes
+2025/04/10-17:09:29.932 3e90 compacted to: files[ 0 1 0 0 0 0 0 ]
+2025/04/10-17:09:29.932 3e90 Delete type=2 #14
+2025/04/10-17:09:29.932 3e90 Delete type=2 #17
+2025/04/10-17:09:29.932 3e90 Delete type=2 #20
+2025/04/10-17:09:29.933 3e90 Delete type=2 #23
+2025/04/10-17:09:29.933 3e90 Delete type=2 #25
