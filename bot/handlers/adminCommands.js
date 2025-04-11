@@ -6,6 +6,8 @@ const { leerClientesGoogle, actualizarFilaExistenteEnGoogleSheets, agregarNuevaF
 const { validarComprobante } = require("../utils/ocrValidator");
 const { generarResumenEstado, obtenerEstadoDeCuentas } = require("../utils/estadoCuentas");
 const { obtenerCatalogoTexto } = require("../utils/catalogoUtils");
+const { limpiarTexto } = require("../utils/helpers");
+
 
 const rutaPendientes = "./pendientes.json";
 const rutaPendienteActual = "./pendiente_actual.json";
@@ -92,26 +94,89 @@ module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
     return;
   }
 
-  let pendientes = fs.existsSync(rutaPendientes)
-    ? JSON.parse(fs.readFileSync(rutaPendientes))
-    : [];
+  const matchComando = texto.match(/^(confirmado|✅|rechazado|❌)\s+(\w+)/i);
+  if (matchComando) {
+    const accion = matchComando[1].toLowerCase();
+    const referenciaBuscada = limpiarTexto(matchComando[2]);
 
-  const pendiente = pendientes.find(p => !p.confirmado);
+    let pendientes = fs.existsSync(rutaPendientes)
+      ? JSON.parse(fs.readFileSync(rutaPendientes))
+      : [];
 
-  if (["rechazado", "❌"].includes(textoLimpio) && pendiente) {
-    pendiente.rechazado = true;
-    pendiente.fechaRechazo = DateTime.now().toISO();
-    fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
+    const pendiente = pendientes.find(p => limpiarTexto(p.referencia) === referenciaBuscada);
 
-    if (pendiente.imagen && fs.existsSync(pendiente.imagen)) {
-      fs.unlinkSync(pendiente.imagen);
+    if (!pendiente) {
+      await msg.reply(`⚠️ No se encontró un comprobante pendiente con la referencia *${referenciaBuscada}*.`);
+      return;
     }
 
-    await client.sendMessage(pendiente.numero + "@c.us", "❌ Tu comprobante fue rechazado por el administrador. Por favor revisa el valor pagado y vuelve a intentarlo.");
-    await msg.reply("❌ Rechazo registrado y notificado al cliente.");
+    if (["confirmado", "✅"].includes(accion)) {
+      pendiente.confirmado = true;
+      pendiente.fechaConfirmacion = DateTime.now().toISO();
+      fs.writeFileSync(rutaPendienteActual, JSON.stringify(pendiente, null, 2));
+
+      pendientes = pendientes.filter(p => p.referencia !== pendiente.referencia && p.numero !== pendiente.numero);
+      fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
+
+      if (pendiente.imagen && fs.existsSync(pendiente.imagen)) {
+        fs.unlinkSync(pendiente.imagen);
+      }
+
+      await client.sendMessage(pendiente.numero + "@c.us", `✅ Tu pago con referencia *${pendiente.referencia}* ha sido confirmado. ¡Gracias por tu renovación o compra! 🎉`);
+      await msg.reply("✅ Confirmación registrada y cliente notificado.");
+
+      // 👇 BLOQUE QUE ACTUALIZA GOOGLE SHEETS PARA RENOVACIONES
+      if (!pendiente.esNuevo) {
+        let fechaInicio, fechaFinal;
+
+        if (pendiente.fechaFinal) {
+          const [d, m, y] = pendiente.fechaFinal.split("/");
+          const fechaFinalAnterior = DateTime.fromFormat(`${d}/${m}/${y}`, "dd/LL/yyyy", { zone: "America/Bogota" });
+          fechaInicio = fechaFinalAnterior;
+          fechaFinal = fechaFinalAnterior.plus({ months: 1 });
+        } else {
+          const hoy = DateTime.now().setZone("America/Bogota");
+          fechaInicio = hoy;
+          fechaFinal = hoy.plus({ months: 1 });
+        }
+
+        const fechaInicioStr = fechaInicio.toFormat("dd/LL/yyyy");
+        const fechaFinalStr = fechaFinal.toFormat("dd/LL/yyyy");
+
+        const filaActualizada = {
+          numero: pendiente.numero,
+          cuenta: pendiente.cuenta,
+          fechaInicio: fechaInicioStr,
+          fechaFinal: fechaFinalStr,
+          respuesta: "✅ Renovación",
+          fechaRespuesta: DateTime.now().setZone("America/Bogota").toFormat("dd/LL/yyyy"),
+          referencia: pendiente.referencia
+        };
+
+        await actualizarFilaExistenteEnGoogleSheets(filaActualizada);
+
+        const mensaje = `🎉 *Gracias por continuar con nosotros.* Tu renovación fue exitosa.\nSi deseas adquirir un nuevo servicio, aquí está nuestro catálogo actualizado:`;
+        await client.sendMessage(pendiente.numero + "@c.us", mensaje);
+        await client.sendMessage(pendiente.numero + "@c.us", obtenerCatalogoTexto());
+        await client.sendMessage(adminPhone, `🔄 Renovación registrada automáticamente para *${pendiente.nombre}* - *${pendiente.cuenta}*.`);
+
+        fs.unlinkSync(rutaPendienteActual);
+      }
+    } else {
+      pendiente.rechazado = true;
+      pendiente.fechaRechazo = DateTime.now().toISO();
+      fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
+
+      if (pendiente.imagen && fs.existsSync(pendiente.imagen)) {
+        fs.unlinkSync(pendiente.imagen);
+      }
+
+      await client.sendMessage(pendiente.numero + "@c.us", `❌ Tu comprobante con referencia *${pendiente.referencia}* fue rechazado. Por favor revisa el valor o consulta con soporte.`);
+      await msg.reply("❌ Rechazo registrado y cliente notificado.");
+    }
     return;
   }
-
+  
   if (["confirmado", "✅"].includes(textoLimpio) && pendiente) {
     pendiente.confirmado = true;
     pendiente.fechaConfirmacion = DateTime.now().toISO();
@@ -129,21 +194,40 @@ module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
       await client.sendMessage(pendiente.numero + "@c.us", `✅ Tu pago ha sido confirmado. ${refCliente}¡Gracias por tu compra! 🎉`);
       await client.sendMessage(adminPhone, `📝 Este es un cliente *nuevo*. Por favor responde con los datos de la nueva cuenta para registrar la venta:\n\n📌 *Escribe en este formato:*\nDISNEY\nusuario: juan123\nclave: abc456`);
     } else {
-      const hoy = DateTime.now().setZone("America/Bogota");
-      const fechaInicio = hoy.toFormat("dd/LL/yyyy");
-      const fechaFinal = hoy.plus({ days: 30 }).toFormat("dd/LL/yyyy");
+      let fechaInicio;
+let fechaFinal;
+
+if (pendiente.fechaFinal) {
+  const [d, m, y] = pendiente.fechaFinal.split("/");
+  const fechaFinalAnterior = DateTime.fromFormat(`${d}/${m}/${y}`, "dd/LL/yyyy", { zone: "America/Bogota" });
+
+  fechaInicio = fechaFinalAnterior;
+  fechaFinal = fechaFinalAnterior.plus({ months: 1 });
+} else {
+  // Fallback si por alguna razón no se tiene la fecha previa
+  const hoy = DateTime.now().setZone("America/Bogota");
+  fechaInicio = hoy;
+  fechaFinal = hoy.plus({ months: 1 });
+}
+
+const fechaInicioStr = fechaInicio.toFormat("dd/LL/yyyy");
+const fechaFinalStr = fechaFinal.toFormat("dd/LL/yyyy");
+
 
       const referencia = pendiente.referencia?.startsWith("AUTO-") ? "" : pendiente.referencia;
 
       const filaActualizada = {
         numero: pendiente.numero,
         cuenta: pendiente.cuenta,
-        fechaInicio,
-        fechaFinal,
+        fechaInicio: fechaInicioStr,
+        fechaFinal: fechaFinalStr,
         respuesta: "✅ Renovación",
-        fechaRespuesta: fechaInicio,
+        fechaRespuesta: DateTime.now().setZone("America/Bogota").toFormat("dd/LL/yyyy"),
         referencia
       };
+      
+      
+      
 
       await actualizarFilaExistenteEnGoogleSheets(filaActualizada);
 
@@ -170,9 +254,27 @@ module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
     const usuarioCuenta = match[2].trim();
     const claveCuenta = match[3].trim();
 
-    const hoy = DateTime.now().setZone("America/Bogota");
-    const fechaInicio = hoy.toFormat("dd/LL/yyyy");
-    const fechaFinal = hoy.plus({ days: 30 }).toFormat("dd/LL/yyyy");
+    const fechaFinalAnteriorStr = pendiente.fechaFinal || null;
+
+let fechaInicio, fechaFinal;
+
+if (pendiente.fechaFinal) {
+  const [d, m, y] = pendiente.fechaFinal.split("/");
+  const fechaFinalAnterior = DateTime.fromFormat(`${d}/${m}/${y}`, "dd/LL/yyyy", { zone: "America/Bogota" });
+
+  fechaInicio = fechaFinalAnterior;
+  fechaFinal = fechaFinalAnterior.plus({ months: 1 });
+} else {
+  const hoy = DateTime.now().setZone("America/Bogota");
+  fechaInicio = hoy;
+  fechaFinal = hoy.plus({ months: 1 });
+}
+
+const fechaInicioStr = fechaInicio.toFormat("dd/LL/yyyy");
+const fechaFinalStr = fechaFinal.toFormat("dd/LL/yyyy");
+
+
+    
 
     const fila = {
       nombre: pendiente.nombre,

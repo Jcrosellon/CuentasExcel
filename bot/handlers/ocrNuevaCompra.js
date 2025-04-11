@@ -1,6 +1,6 @@
 const fs = require("fs");
 const { DateTime } = require("luxon");
-const { MessageMedia } = require("whatsapp-web.js");
+const { MessageMedia, Buttons } = require("whatsapp-web.js");
 const { obtenerCatalogoTexto } = require("../utils/catalogoUtils");
 const { limpiarTexto } = require("../utils/helpers");
 const { leerClientesGoogle } = require("../utils/utilsGoogle");
@@ -47,15 +47,22 @@ async function manejarCompraNueva({ client, numero, media, resultado, tempPath, 
     VALOR: pendienteActual.valor || "20000"
   };
 
-  const mensajeAdmin = `🧾 *Pago recibido de ${clienteData.NOMBRE}*\n` +
+  const botones = new Buttons(
+    `🧾 *Pago recibido de ${clienteData.NOMBRE}*\n` +
     `🧩 Referencia: ${resultado.referenciaDetectada}\n` +
     `📌 Cuenta: ${clienteData.CUENTA} (usuario: ${clienteData.USUARIO})\n` +
     `🧾 Tipo: Nueva Compra\n\n` +
-    `✅ Para *confirmar* este pago responde: *CONFIRMADO* o ✅\n` +
-    `❌ Para *rechazarlo* responde: *RECHAZADO* o ❌`;
+    `¿Deseas confirmar este pago?`,
+    [
+      { body: `✅ Confirmar ${resultado.referenciaDetectada}` },
+      { body: `❌ Rechazar ${resultado.referenciaDetectada}` }
+    ],
+    "🧾 Comprobante",
+    "Comprobante adjunto"
+  );
 
-  await client.sendMessage(adminPhone, mensajeAdmin);
   await client.sendMessage(adminPhone, media, { caption: "🖼 Comprobante adjunto" });
+  await client.sendMessage(adminPhone, botones);
   await msg.reply("🕓 Comprobante enviado para validación. Te notificaremos pronto. 🙌");
 
   const pendientes = fs.existsSync(rutaPendientes) ? JSON.parse(fs.readFileSync(rutaPendientes)) : [];
