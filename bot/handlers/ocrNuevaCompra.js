@@ -1,12 +1,12 @@
 const fs = require("fs");
 const { DateTime } = require("luxon");
-const { MessageMedia, Buttons } = require("whatsapp-web.js");
+const { MessageMedia } = require("whatsapp-web.js");
 const { obtenerCatalogoTexto } = require("../utils/catalogoUtils");
 const { limpiarTexto } = require("../utils/helpers");
-const { leerClientesGoogle } = require("../utils/utilsGoogle");
+const { leerClientesGoogle, agregarNuevaFilaEnGoogleSheets } = require("../utils/utilsGoogle");
 
-const rutaPendientes = "./pendientes.json";
 const rutaPendienteActual = "./pendiente_actual.json";
+const rutaPendienteNuevo = "./pendiente_nuevo.json";
 
 async function manejarCompraNueva({ client, numero, media, resultado, tempPath, msg, adminPhone }) {
   const refLimpia = limpiarTexto(resultado.referenciaDetectada);
@@ -41,45 +41,37 @@ async function manejarCompraNueva({ client, numero, media, resultado, tempPath, 
   }
 
   const clienteData = {
-    NOMBRE: pendienteActual.nombre || "Nuevo Cliente",
-    CUENTA: pendienteActual.cuenta || "SERVICIO NUEVO",
-    USUARIO: pendienteActual.usuario || "",
-    VALOR: pendienteActual.valor || "20000"
+    nombre: pendienteActual.nombre || "Nuevo Cliente",
+    cuenta: pendienteActual.cuenta || "SERVICIO NUEVO",
+    usuario: pendienteActual.usuario || "",
+    valor: pendienteActual.valor || "20000"
   };
 
-  const botones = new Buttons(
-    `🧾 *Pago recibido de ${clienteData.NOMBRE}*\n` +
-    `🧩 Referencia: ${resultado.referenciaDetectada}\n` +
-    `📌 Cuenta: ${clienteData.CUENTA} (usuario: ${clienteData.USUARIO})\n` +
-    `🧾 Tipo: Nueva Compra\n\n` +
-    `¿Deseas confirmar este pago?`,
-    [
-      { body: `✅ Confirmar ${resultado.referenciaDetectada}` },
-      { body: `❌ Rechazar ${resultado.referenciaDetectada}` }
-    ],
-    "🧾 Comprobante",
-    "Comprobante adjunto"
-  );
+  const mensajeAdmin = `🧾 *Pago recibido de ${clienteData.nombre}*\n` +
+    `🧩 Referencia: *${resultado.referenciaDetectada}*\n` +
+    `📌 Cuenta: *${clienteData.cuenta}* (usuario: ${clienteData.usuario})\n` +
+    `🧾 Tipo: *Nueva Compra*`;
 
+  await client.sendMessage(adminPhone, mensajeAdmin);
   await client.sendMessage(adminPhone, media, { caption: "🖼 Comprobante adjunto" });
-  await client.sendMessage(adminPhone, botones);
+  await client.sendMessage(adminPhone, `CONFIRMADO ${resultado.referenciaDetectada}`);
+  await client.sendMessage(adminPhone, `RECHAZADO ${resultado.referenciaDetectada}`);
   await msg.reply("🕓 Comprobante enviado para validación. Te notificaremos pronto. 🙌");
 
-  const pendientes = fs.existsSync(rutaPendientes) ? JSON.parse(fs.readFileSync(rutaPendientes)) : [];
-  pendientes.push({
+  const nuevoPendiente = {
     numero,
     referencia: resultado.referenciaDetectada,
     fecha: DateTime.now().toISO(),
-    nombre: clienteData.NOMBRE,
-    cuenta: clienteData.CUENTA,
-    usuario: clienteData.USUARIO,
+    nombre: clienteData.nombre,
+    cuenta: clienteData.cuenta,
+    usuario: clienteData.usuario,
     imagen: tempPath,
     esNuevo: true,
-    valor: clienteData.VALOR,
+    valor: clienteData.valor,
     confirmado: false
-  });
+  };
 
-  fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
+  fs.writeFileSync(rutaPendienteNuevo, JSON.stringify(nuevoPendiente, null, 2));
   console.log("🆕 Pendiente de nueva compra registrado:", resultado.referenciaDetectada);
 }
 

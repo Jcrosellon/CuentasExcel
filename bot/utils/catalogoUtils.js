@@ -2,7 +2,6 @@
 const fs = require("fs");
 
 const rutaCatalogo = "./catalogo.txt";
-const rutaCatalogoNumerado = "./catalogoNumerado.txt";
 
 let catalogoNumerado = [];
 
@@ -20,7 +19,9 @@ function cargarCatalogoNumerado() {
 }
 
 function buscarProductoPorNumero(numero) {
-  return catalogoNumerado[numero - 1] || null;
+  const catalogo = fs.readFileSync("./catalogo.txt", "utf8").split("\n");
+  const linea = catalogo.find(linea => linea.trim().startsWith(`${numero}.`));
+  return linea || null;
 }
 
 function obtenerValorProductoPorNumero(numero) {

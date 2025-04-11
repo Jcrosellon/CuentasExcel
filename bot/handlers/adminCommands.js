@@ -10,6 +10,7 @@ const { limpiarTexto } = require("../utils/helpers");
 
 
 const rutaPendientes = "./pendientes.json";
+const rutaPendienteNuevo = "./pendiente_nuevo.json";
 const rutaPendienteActual = "./pendiente_actual.json";
 
 module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
@@ -18,6 +19,7 @@ module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
 
   if (textoLimpio === "limpiar pendientes") {
     fs.writeFileSync(rutaPendientes, JSON.stringify([], null, 2));
+    fs.writeFileSync(rutaPendienteNuevo, JSON.stringify([], null, 2));
     await msg.reply("🧹 Pendientes limpiados con éxito.");
     return;
   }
@@ -99,11 +101,16 @@ module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
     const accion = matchComando[1].toLowerCase();
     const referenciaBuscada = limpiarTexto(matchComando[2]);
 
-    let pendientes = fs.existsSync(rutaPendientes)
-      ? JSON.parse(fs.readFileSync(rutaPendientes))
-      : [];
+    let pendientesRenovacion = fs.existsSync(rutaPendientes) ? JSON.parse(fs.readFileSync(rutaPendientes)) : [];
+    let pendientesCompra = fs.existsSync(rutaPendienteNuevo) ? JSON.parse(fs.readFileSync(rutaPendienteNuevo)) : [];
 
-    const pendiente = pendientes.find(p => limpiarTexto(p.referencia) === referenciaBuscada);
+    let pendiente = pendientesRenovacion.find(p => limpiarTexto(p.referencia) === referenciaBuscada);
+    let tipo = "renovacion";
+
+    if (!pendiente) {
+      pendiente = pendientesCompra.find(p => limpiarTexto(p.referencia) === referenciaBuscada);
+      tipo = pendiente ? "nueva" : null;
+    }
 
     if (!pendiente) {
       await msg.reply(`⚠️ No se encontró un comprobante pendiente con la referencia *${referenciaBuscada}*.`);
@@ -113,22 +120,27 @@ module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
     if (["confirmado", "✅"].includes(accion)) {
       pendiente.confirmado = true;
       pendiente.fechaConfirmacion = DateTime.now().toISO();
-      fs.writeFileSync(rutaPendienteActual, JSON.stringify(pendiente, null, 2));
 
-      pendientes = pendientes.filter(p => p.referencia !== pendiente.referencia && p.numero !== pendiente.numero);
-      fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
+      if (tipo === "renovacion") {
+        fs.writeFileSync(rutaPendienteActual, JSON.stringify(pendiente, null, 2));
+        pendientesRenovacion = pendientesRenovacion.filter(p => limpiarTexto(p.referencia) !== referenciaBuscada);
+        fs.writeFileSync(rutaPendientes, JSON.stringify(pendientesRenovacion, null, 2));
+      } else {
+        fs.writeFileSync(rutaPendienteActual, JSON.stringify(pendiente, null, 2));
+        pendientesCompra = pendientesCompra.filter(p => limpiarTexto(p.referencia) !== referenciaBuscada);
+        fs.writeFileSync(rutaPendienteNuevo, JSON.stringify(pendientesCompra, null, 2));
+      }
 
       if (pendiente.imagen && fs.existsSync(pendiente.imagen)) {
         fs.unlinkSync(pendiente.imagen);
       }
 
-      await client.sendMessage(pendiente.numero + "@c.us", `✅ Tu pago con referencia *${pendiente.referencia}* ha sido confirmado. ¡Gracias por tu renovación o compra! 🎉`);
+      await client.sendMessage(pendiente.numero + "@c.us", `✅ Tu pago con referencia *${pendiente.referencia}* ha sido confirmado. ¡Gracias por tu ${tipo === "nueva" ? "compra" : "renovación"}! 🎉`);
       await msg.reply("✅ Confirmación registrada y cliente notificado.");
 
-      // 👇 BLOQUE QUE ACTUALIZA GOOGLE SHEETS PARA RENOVACIONES
-      if (!pendiente.esNuevo) {
+      // Si es renovación, actualiza el documento
+      if (tipo === "renovacion") {
         let fechaInicio, fechaFinal;
-
         if (pendiente.fechaFinal) {
           const [d, m, y] = pendiente.fechaFinal.split("/");
           const fechaFinalAnterior = DateTime.fromFormat(`${d}/${m}/${y}`, "dd/LL/yyyy", { zone: "America/Bogota" });
@@ -140,14 +152,11 @@ module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
           fechaFinal = hoy.plus({ months: 1 });
         }
 
-        const fechaInicioStr = fechaInicio.toFormat("dd/LL/yyyy");
-        const fechaFinalStr = fechaFinal.toFormat("dd/LL/yyyy");
-
         const filaActualizada = {
           numero: pendiente.numero,
           cuenta: pendiente.cuenta,
-          fechaInicio: fechaInicioStr,
-          fechaFinal: fechaFinalStr,
+          fechaInicio: fechaInicio.toFormat("dd/LL/yyyy"),
+          fechaFinal: fechaFinal.toFormat("dd/LL/yyyy"),
           respuesta: "✅ Renovación",
           fechaRespuesta: DateTime.now().setZone("America/Bogota").toFormat("dd/LL/yyyy"),
           referencia: pendiente.referencia
@@ -155,17 +164,25 @@ module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
 
         await actualizarFilaExistenteEnGoogleSheets(filaActualizada);
 
-        const mensaje = `🎉 *Gracias por continuar con nosotros.* Tu renovación fue exitosa.\nSi deseas adquirir un nuevo servicio, aquí está nuestro catálogo actualizado:`;
-        await client.sendMessage(pendiente.numero + "@c.us", mensaje);
+        await client.sendMessage(pendiente.numero + "@c.us", "🎉 *Gracias por continuar con nosotros.* Tu renovación fue exitosa. Aquí está nuestro catálogo actualizado:");
         await client.sendMessage(pendiente.numero + "@c.us", obtenerCatalogoTexto());
         await client.sendMessage(adminPhone, `🔄 Renovación registrada automáticamente para *${pendiente.nombre}* - *${pendiente.cuenta}*.`);
-
         fs.unlinkSync(rutaPendienteActual);
       }
+
+      // Si es nueva, esperamos a que el admin mande los datos de cuenta
+      if (tipo === "nueva") {
+        await client.sendMessage(adminPhone, `📝 Este es un cliente *nuevo*. Por favor responde con los datos de la nueva cuenta para registrar la venta:\n\n📌 *Escribe en este formato:*\nDISNEY\nusuario: juan123\nclave: abc456`);
+      }
+
     } else {
       pendiente.rechazado = true;
       pendiente.fechaRechazo = DateTime.now().toISO();
-      fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
+      if (tipo === "renovacion") {
+        fs.writeFileSync(rutaPendientes, JSON.stringify(pendientesRenovacion, null, 2));
+      } else {
+        fs.writeFileSync(rutaPendienteNuevo, JSON.stringify(pendientesCompra, null, 2));
+      }
 
       if (pendiente.imagen && fs.existsSync(pendiente.imagen)) {
         fs.unlinkSync(pendiente.imagen);
@@ -176,7 +193,7 @@ module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
     }
     return;
   }
-  
+
   if (["confirmado", "✅"].includes(textoLimpio) && pendiente) {
     pendiente.confirmado = true;
     pendiente.fechaConfirmacion = DateTime.now().toISO();
