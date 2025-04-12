@@ -40,12 +40,15 @@ async function manejarCompraNueva({ client, numero, media, resultado, tempPath, 
     return;
   }
 
-  const clienteData = {
-    nombre: pendienteActual.nombre || "Nuevo Cliente",
-    cuenta: pendienteActual.cuenta || "SERVICIO NUEVO",
-    usuario: pendienteActual.usuario || "",
-    valor: pendienteActual.valor || "20000"
-  };
+  const valorEsperado = parseInt(pendienteActual.valor?.toString().replace(/[^\d]/g, ""), 10);
+
+const clienteData = {
+  nombre: pendienteActual.nombre || "Nuevo Cliente",
+  cuenta: pendienteActual.cuenta || "SERVICIO NUEVO",
+  usuario: pendienteActual.usuario || "",
+  valor: valorEsperado || 0
+};
+
 
   const mensajeAdmin = `🧾 *Pago recibido de ${clienteData.nombre}*\n` +
     `🧩 Referencia: *${resultado.referenciaDetectada}*\n` +

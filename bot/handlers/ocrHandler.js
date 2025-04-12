@@ -8,6 +8,7 @@ const { manejarCompraNueva } = require("./ocrNuevaCompra");
 const { limpiarTexto } = require("../utils/helpers");
 
 const rutaPendienteActual = "./pendiente_actual.json";
+const rutaPendienteNuevo = "./pendiente_nuevo.json";
 const rutaPendientes = "./pendientes.json";
 
 async function manejarMediaComprobante(client, msg, numero, media, cuentasUsuario, adminPhone) {
@@ -78,14 +79,24 @@ async function manejarMediaComprobante(client, msg, numero, media, cuentasUsuari
       await client.sendMessage(numero + "@c.us", obtenerCatalogoTexto());
       await unlink(tempPath).catch(() => {});
 
-      if (fs.existsSync(rutaPendienteActual)) {
-        fs.unlinkSync(rutaPendienteActual);
-      }
+      fs.unlinkSync(rutaPendienteActual);
       return;
     }
 
     if (mismoNumero && !pendienteActual.confirmado) {
-      console.log("🆕 Se detectó compra nueva activa para:", numero);
+      console.log("🆕 Se detectó compra nueva activa en pendiente_actual para:", numero);
+      await manejarCompraNueva({ client, msg, numero, media, resultado, referenciaDetectada, adminPhone, tempPath });
+      return;
+    }
+  }
+
+  // 🔥 Nuevo bloque para validar compras nuevas de clientes NUEVOS
+  if (fs.existsSync(rutaPendienteNuevo)) {
+    const pendienteNuevo = JSON.parse(fs.readFileSync(rutaPendienteNuevo));
+    const mismoNumeroNuevo = pendienteNuevo.numero === numero;
+
+    if (mismoNumeroNuevo && !pendienteNuevo.confirmado) {
+      console.log("🆕 Se detectó compra nueva activa en pendiente_nuevo para:", numero);
       await manejarCompraNueva({ client, msg, numero, media, resultado, referenciaDetectada, adminPhone, tempPath });
       return;
     }

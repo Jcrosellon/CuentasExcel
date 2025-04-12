@@ -1,31 +1,31 @@
-2025/04/12-12:32:38.051 a7fc Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/04/12-12:32:38.054 a7fc Recovering log #1304
-2025/04/12-12:32:38.136 a7fc Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/001304.log 
-2025/04/12-12:32:39.552 9cd4 Level-0 table #1318: started
-2025/04/12-12:32:39.571 9cd4 Level-0 table #1318: 563289 bytes OK
-2025/04/12-12:32:39.573 9cd4 Delete type=0 #1304
-2025/04/12-12:32:39.574 9cd4 Manual compaction at level-0 from '\x00\xdf\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\xe0\x00\x00\x00' @ 0 : 0; will stop at (end)
-2025/04/12-12:32:41.108 b278 Compacting 1@1 + 10@2 files
-2025/04/12-12:32:41.215 b278 Generated table #1319@1: 86442 keys, 2237335 bytes
-2025/04/12-12:32:41.302 b278 Generated table #1320@1: 92013 keys, 2298186 bytes
-2025/04/12-12:32:41.348 b278 Generated table #1321@1: 19065 keys, 2183667 bytes
-2025/04/12-12:32:41.367 b278 Generated table #1322@1: 900 keys, 2130745 bytes
-2025/04/12-12:32:41.387 b278 Generated table #1323@1: 636 keys, 2125759 bytes
-2025/04/12-12:32:41.437 b278 Generated table #1324@1: 18673 keys, 2177701 bytes
-2025/04/12-12:32:41.469 b278 Generated table #1325@1: 13236 keys, 2144029 bytes
-2025/04/12-12:32:41.571 b278 Generated table #1326@1: 93516 keys, 2240838 bytes
-2025/04/12-12:32:41.681 b278 Generated table #1327@1: 112250 keys, 2265561 bytes
-2025/04/12-12:32:41.688 b278 Generated table #1328@1: 4340 keys, 98231 bytes
-2025/04/12-12:32:41.688 b278 Compacted 1@1 + 10@2 files => 19902052 bytes
-2025/04/12-12:32:41.689 b278 compacted to: files[ 0 0 10 0 0 0 0 ]
-2025/04/12-12:32:41.690 b278 Delete type=2 #1306
-2025/04/12-12:32:41.690 b278 Delete type=2 #1307
-2025/04/12-12:32:41.690 b278 Delete type=2 #1308
-2025/04/12-12:32:41.690 b278 Delete type=2 #1309
-2025/04/12-12:32:41.690 b278 Delete type=2 #1310
-2025/04/12-12:32:41.690 b278 Delete type=2 #1311
-2025/04/12-12:32:41.690 b278 Delete type=2 #1312
-2025/04/12-12:32:41.690 b278 Delete type=2 #1313
-2025/04/12-12:32:41.690 b278 Delete type=2 #1314
-2025/04/12-12:32:41.690 b278 Delete type=2 #1315
-2025/04/12-12:32:41.690 b278 Delete type=2 #1318
+2025/04/12-13:02:49.361 3a94 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/12-13:02:49.361 3a94 Recovering log #1343
+2025/04/12-13:02:49.420 3a94 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/001343.log 
+2025/04/12-13:02:53.615 aab4 Level-0 table #1357: started
+2025/04/12-13:02:53.630 aab4 Level-0 table #1357: 708160 bytes OK
+2025/04/12-13:02:53.632 aab4 Delete type=0 #1343
+2025/04/12-13:02:53.633 aab4 Manual compaction at level-0 from '\x00\xe2\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\xe3\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/12-13:02:55.194 3a94 Compacting 1@1 + 10@2 files
+2025/04/12-13:02:55.289 3a94 Generated table #1358@1: 86278 keys, 2236123 bytes
+2025/04/12-13:02:55.388 3a94 Generated table #1359@1: 97216 keys, 2271108 bytes
+2025/04/12-13:02:55.439 3a94 Generated table #1360@1: 18990 keys, 2217125 bytes
+2025/04/12-13:02:55.461 3a94 Generated table #1361@1: 1106 keys, 2131213 bytes
+2025/04/12-13:02:55.478 3a94 Generated table #1362@1: 660 keys, 2121142 bytes
+2025/04/12-13:02:55.515 3a94 Generated table #1363@1: 13370 keys, 2161094 bytes
+2025/04/12-13:02:55.561 3a94 Generated table #1364@1: 18631 keys, 2162937 bytes
+2025/04/12-13:02:55.639 3a94 Generated table #1365@1: 74351 keys, 2213486 bytes
+2025/04/12-13:02:55.740 3a94 Generated table #1366@1: 112193 keys, 2264673 bytes
+2025/04/12-13:02:55.768 3a94 Generated table #1367@1: 27081 keys, 558318 bytes
+2025/04/12-13:02:55.768 3a94 Compacted 1@1 + 10@2 files => 20337219 bytes
+2025/04/12-13:02:55.770 3a94 compacted to: files[ 0 0 10 0 0 0 0 ]
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1345
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1346
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1347
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1348
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1349
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1350
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1351
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1352
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1353
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1354
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1357

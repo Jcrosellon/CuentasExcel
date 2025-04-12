@@ -34,7 +34,7 @@ async function manejarMensajeTexto(msg, numero, texto, cuentasUsuario, client, a
       const pendiente = {
         numero,
         cuenta: producto.split("-")[0].trim().toUpperCase(),
-        valor: valorProducto || "20000",
+        valor: valorProducto ? valorProducto.toString() : "0", // o puedes lanzar error si no se encuentra
         nombre: "Nuevo Cliente",
         usuario: "",
         fecha: DateTime.now().toISO(),
