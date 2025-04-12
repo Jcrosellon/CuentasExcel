@@ -25,7 +25,16 @@ client.on("ready", async () => {
   console.log("✅ Bot listo. Programando tareas...");
 
   await procesarVencimientos(client, "573114207673");
-enviarVencimientosProgramados(client);
+  enviarVencimientosProgramados(client);
+
+  // 🕛 Ejecutar recordatorios todos los días a las 12:00 PM
+  cron.schedule("35 12 * * *", async () => {
+    console.log("⏰ Ejecutando recordatorios programados (12:00 PM)...");
+    const { enviarRecordatorios } = require("./handlers/enviarRecordatorios");
+    await enviarRecordatorios(client);
+  });
+
+
 });
 
 client.on("message", async (msg) => {
@@ -37,20 +46,18 @@ client.on("message", async (msg) => {
     (c["NUMERO WHATSAPP"] || "").toString().includes(numero)
   );
 
-
   if (msg.hasMedia) {
     const media = await msg.downloadMedia().catch(() => null);
     if (!media || !["image/jpeg", "image/png"].includes(media.mimetype)) {
       reenviarMensajeAnterior(client, numero);
       return;
     }
-  
+
     // Solo si es imagen válida continúa
     await msg.reply("📸 Recibimos tu comprobante. *Validando...*");
     await manejarMediaComprobante(client, msg, numero, media, cuentasUsuario, adminPhone);
     return;
   }
-  
 
   if (msg.from === adminPhone) {
     await manejarComandosAdmin(msg, client, adminPhone);

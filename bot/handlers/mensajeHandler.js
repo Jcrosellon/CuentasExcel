@@ -63,20 +63,71 @@ async function manejarMensajeTexto(msg, numero, texto, cuentasUsuario, client, a
   const yaPago = cliente["RESPUESTA"]?.toLowerCase().includes("comprobante");
   console.log("💰 ¿Ya pagó este cliente?", yaPago);
 
-  if (["si", "sí", "✅ si"].includes(textoLimpio)) {
-    console.log("📥 Cliente respondió que sí pagará");
-    await msg.reply("👍 ¡Perfecto! Realiza el pago a *Nequi o Daviplata: 3183192913* y adjunta el pantallazo aquí.");
-    for (const cliente of cuentasUsuario) await guardarRespuesta(numero, cliente, "SI", fechaActual);
-    return;
+  const afirmativos = ["si", "sí", "✅", "dale", "confirmo", "de una", "claro", "vale", "ok"];
+
+  if (/(\bsi\b|\bsí\b|✅|dale|confirmo|claro|vale|ok)/i.test(texto)) {
+
+  console.log(`✅ Respuesta afirmativa detectada para ${numero}: "${textoLimpio}"`);
+
+  await msg.reply("👍 ¡Perfecto! Realiza el pago a *Nequi o Daviplata: 3183192913* y adjunta el pantallazo aquí.");
+
+  // Registrar la respuesta SI en el documento (Google Sheets o local)
+  for (const cliente of cuentasUsuario) {
+    await guardarRespuesta(numero, cliente, "SI", fechaActual);
+    console.log(`💾 Respuesta SI registrada para ${cliente["NOMBRE"] || numero}`);
   }
 
-  if (["no", "❌ no"].includes(textoLimpio)) {
-    console.log("📥 Cliente respondió que no pagará");
-    await msg.reply("☹️ Siento que hayas tenido algún inconveniente...");
-    await client.sendMessage(numero + "@c.us", obtenerCatalogoTexto());
-    for (const cliente of cuentasUsuario) await guardarRespuesta(numero, cliente, "NO", fechaActual);
-    return;
+  // (Opcional) Enviar el catálogo para facilitar nueva selección
+  const catalogo = obtenerCatalogoTexto();
+  // Solo enviar catálogo si ya pagó o si es nuevo cliente seleccionando producto
+if (yaPago) {
+  await client.sendMessage(numero + "@c.us", "🛍️ Aquí tienes de nuevo nuestro catálogo por si deseas adquirir otro servicio:");
+  await client.sendMessage(numero + "@c.us", obtenerCatalogoTexto());
+}
+
+
+  // 📌 Guardar respuesta "sí" para reenviar número de pago si fue ignorado
+const rutaPendientesSI = "./pendientes_si.json";
+let pendientesSI = {};
+
+if (fs.existsSync(rutaPendientesSI)) {
+  try {
+    pendientesSI = JSON.parse(fs.readFileSync(rutaPendientesSI, "utf8"));
+  } catch (err) {
+    console.error("❌ Error leyendo pendientes_si.json:", err.message);
   }
+}
+
+pendientesSI[numero] = {
+  intencion: "si",
+  fecha: DateTime.now().toISO(),
+  enviado: true // ya fue enviado en este momento
+};
+
+fs.writeFileSync(rutaPendientesSI, JSON.stringify(pendientesSI, null, 2));
+console.log(`📝 Registro de SI persistente guardado para ${numero}`);
+
+
+  return;
+}
+
+
+const negativos = ["no", "❌", "nah", "nop", "nunca", "ya no", "gracias no"];
+
+if (negativos.some(p => textoLimpio.includes(p))) {
+  console.log(`❌ Respuesta negativa detectada para ${numero}: "${textoLimpio}"`);
+
+  await msg.reply("☹️ Lamentamos que no continúes. Aquí tienes el catálogo por si cambias de opinión:");
+  await client.sendMessage(numero + "@c.us", obtenerCatalogoTexto());
+
+  for (const cliente of cuentasUsuario) {
+    await guardarRespuesta(numero, cliente, "NO", fechaActual);
+    console.log(`💾 Respuesta NO registrada para ${cliente["NOMBRE"] || numero}`);
+  }
+
+  return;
+}
+
 
   if (yaPago) {
     console.log("✅ Cliente ya tiene comprobante registrado");
