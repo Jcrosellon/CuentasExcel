@@ -5,6 +5,8 @@ const fs = require("fs");
 const { DateTime } = require("luxon");
 const { esNumeroValido } = require("../utils/helpers");
 const { leerClientesGoogle } = require("../utils/utilsGoogle");
+const { leerJsonSeguro } = require("../utils/helpers");
+
 const {
   buscarProductoPorNumero,
   obtenerCatalogoTexto,
@@ -109,15 +111,15 @@ async function manejarMensajeTexto(client, msg) {
 
     const rutaPendientesSI = paths.pendientesSI;
 
-    let pendientesSI = {};
-    if (fs.existsSync(rutaPendientesSI)) {
-      try {
-        pendientesSI = JSON.parse(fs.readFileSync(paths.pendientesSI, "utf8"));
-
-      } catch (err) {
-        console.error("❌ Error leyendo pendientes_si.json:", err.message);
-      }
+    let pendientesSI = [];
+    try {
+      const contenido = fs.readFileSync(paths.pendientesSI, "utf8").trim();
+      const pendientesSI = leerJsonSeguro(paths.pendientesSI);
+    } catch (err) {
+      console.error("⚠️ Error leyendo pendientes_si.json:", err.message);
+      pendientesSI = [];
     }
+
 
     pendientesSI[numero] = {
       intencion: "si",
@@ -185,7 +187,8 @@ async function manejarMensajeTexto(client, msg) {
   let historial = {};
   if (fs.existsSync(rutaMensajesEnviados)) {
     try {
-      const historial = JSON.parse(fs.readFileSync(paths.mensajesEnviados, "utf8"));
+      const historial = leerJsonSeguro(paths.mensajesEnviados);
+
 
 
       historial = contenido ? JSON.parse(contenido) : {};

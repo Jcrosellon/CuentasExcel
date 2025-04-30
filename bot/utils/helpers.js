@@ -1,6 +1,6 @@
-const paths = require('../config/paths');
 
 // /bot/utils/helpers.js
+const paths = require('../config/paths');
 const fs = require("fs");
 function formatearPesosColombianos(valor) {
   valor = parseInt(valor);
@@ -34,13 +34,31 @@ async function enviarMensajeSeguro(client, numero, mensaje) {
   }
 }
 
+function leerJsonSeguro(ruta) {
+  try {
+    const contenido = fs.readFileSync(ruta, "utf8").trim();
+
+    // Si el archivo está vacío, devolvemos un valor por defecto
+    if (!contenido) {
+      console.error(`⚠️ El archivo ${ruta} está vacío.`);
+      return [];  // Si el archivo está vacío, retornamos un array vacío
+    }
+
+    return JSON.parse(contenido);
+  } catch (err) {
+    console.error(`⚠️ Error leyendo o parseando ${ruta}:`, err.message);
+    return [];  // Retornamos un array vacío si hubo algún error
+  }
+}
+
 
 function cargarJsonSeguro(ruta, porDefecto = []) {
   try {
     if (!fs.existsSync(ruta)) return porDefecto;
-    const texto = fs.readFileSync(paths.archivo, "utf8");
+    const texto = fs.readFileSync(ruta, "utf8");
 
-    return JSON.parse(texto || "[]");
+    return leerJsonSeguro(texto || "[]");
+
   } catch (err) {
     console.warn(`⚠️ Error leyendo ${ruta}. Usando valor por defecto.`);
     return porDefecto;
@@ -52,5 +70,6 @@ module.exports = {
   esNumeroValido,
   limpiarTexto,
   enviarMensajeSeguro,
-  cargarJsonSeguro 
+  cargarJsonSeguro,
+  leerJsonSeguro
 };

@@ -1,4 +1,31 @@
-2025/04/30-10:33:16.600 d9f30 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel-Bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
-2025/04/30-10:33:16.600 d9f30 Recovering log #291
-2025/04/30-10:33:16.640 d9f30 Reusing old log C:\Users\JoseRosellon\CuentasExcel-Bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000291.log 
-2025/04/30-10:33:20.976 d9f30 Manual compaction at level-0 from '\x00\x1d\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x1e\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/30-13:11:30.524 5350c Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel-Bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/30-13:11:30.527 5350c Recovering log #395
+2025/04/30-13:11:30.607 5350c Reusing old log C:\Users\JoseRosellon\CuentasExcel-Bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000395.log 
+2025/04/30-13:11:32.084 53110 Level-0 table #409: started
+2025/04/30-13:11:32.103 53110 Level-0 table #409: 590301 bytes OK
+2025/04/30-13:11:32.105 53110 Delete type=0 #395
+2025/04/30-13:11:32.105 53110 Manual compaction at level-0 from '\x00,\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00-\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/30-13:11:33.604 4132c Compacting 1@1 + 10@2 files
+2025/04/30-13:11:33.678 4132c Generated table #410@1: 47166 keys, 2206306 bytes
+2025/04/30-13:11:33.714 4132c Generated table #411@1: 1855 keys, 2141654 bytes
+2025/04/30-13:11:33.741 4132c Generated table #412@1: 850 keys, 2125193 bytes
+2025/04/30-13:11:33.764 4132c Generated table #413@1: 829 keys, 2127767 bytes
+2025/04/30-13:11:33.826 4132c Generated table #414@1: 20181 keys, 2186036 bytes
+2025/04/30-13:11:33.866 4132c Generated table #415@1: 12378 keys, 2144723 bytes
+2025/04/30-13:11:33.957 4132c Generated table #416@1: 74358 keys, 2217260 bytes
+2025/04/30-13:11:34.069 4132c Generated table #417@1: 113191 keys, 2264706 bytes
+2025/04/30-13:11:34.190 4132c Generated table #418@1: 113130 keys, 2265007 bytes
+2025/04/30-13:11:34.248 4132c Generated table #419@1: 57653 keys, 1152339 bytes
+2025/04/30-13:11:34.248 4132c Compacted 1@1 + 10@2 files => 20830991 bytes
+2025/04/30-13:11:34.250 4132c compacted to: files[ 0 0 10 0 0 0 0 ]
+2025/04/30-13:11:34.250 4132c Delete type=2 #397
+2025/04/30-13:11:34.250 4132c Delete type=2 #398
+2025/04/30-13:11:34.250 4132c Delete type=2 #399
+2025/04/30-13:11:34.250 4132c Delete type=2 #400
+2025/04/30-13:11:34.250 4132c Delete type=2 #401
+2025/04/30-13:11:34.250 4132c Delete type=2 #402
+2025/04/30-13:11:34.250 4132c Delete type=2 #403
+2025/04/30-13:11:34.251 4132c Delete type=2 #404
+2025/04/30-13:11:34.251 4132c Delete type=2 #405
+2025/04/30-13:11:34.251 4132c Delete type=2 #406
+2025/04/30-13:11:34.251 4132c Delete type=2 #409

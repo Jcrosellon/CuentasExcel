@@ -11,16 +11,21 @@ async function manejarRenovacion({ client, numero, media, resultado, tempPath, m
   const referenciaDetectada = resultado.referenciaDetectada?.trim() || "";
   const valorDetectado = resultado.valorDetectado || 0;
 
-  const pendientes = fs.existsSync(rutaPendientes)
-  ? JSON.parse(fs.readFileSync(paths.pendientes))
-
-    : [];
+  // Uso de la lectura segura de pendientes.json
+  let pendientes = [];
+  try {
+    const contenido = fs.readFileSync(paths.pendientes, "utf8").trim();
+    pendientes = contenido ? JSON.parse(contenido) : [];
+  } catch (err) {
+    console.error("⚠️ Error leyendo pendientes.json:", err.message);
+    pendientes = [];  // fallback seguro
+  }
 
   const pendiente = pendientes.find(p => p.numero === numero && !p.confirmado);
 
   if (!pendiente) {
     await msg.reply("⚠️ No se encontró información de una renovación activa con tu número.");
-    await client.sendMessage(numero + "@c.us", "🎁 Aquí tienes nuestro catálogo actualizado por si deseas adquirir un nuevo servicio, or favor selecciona un producto del catálogo.:");
+    await client.sendMessage(numero + "@c.us", "🎁 Aquí tienes nuestro catálogo actualizado por si deseas adquirir un nuevo servicio, por favor selecciona un producto del catálogo:");
     await client.sendMessage(numero + "@c.us", obtenerCatalogoTexto());
     await fs.promises.unlink(tempPath).catch(() => {});
     return;
@@ -29,7 +34,7 @@ async function manejarRenovacion({ client, numero, media, resultado, tempPath, m
   const valorEsperado = (pendiente.valor || "20000").toString().replace(/\./g, "");
 
   if (valorDetectado === 0 || isNaN(valorDetectado)) {
-    await msg.reply("⚠️ No pudimos detectar un valor de pago en el comprobante. Asegúrate de que el comprobante sea valido.");
+    await msg.reply("⚠️ No pudimos detectar un valor de pago en el comprobante. Asegúrate de que el comprobante sea válido.");
     await fs.promises.unlink(tempPath).catch(() => {});
     return;
   }

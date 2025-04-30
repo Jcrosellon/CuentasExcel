@@ -13,16 +13,17 @@ const rutaPendientes = paths.pendientes;
 const rutaPendienteNuevo = paths.pendienteNuevo;
 const rutaPendienteActual = paths.pendienteActual;
 
+// Aquí ya existe una función para leer el JSON de manera segura
 function cargarJsonSeguro(ruta, tipo = "array") {
   if (!fs.existsSync(ruta)) return tipo === "array" ? [] : {};
   try {
-    const contenido = fs.readFileSync(paths.config, "utf8");
+    const contenido = fs.readFileSync(ruta, "utf8");
 
     if (!contenido.trim()) return tipo === "array" ? [] : {};
     return JSON.parse(contenido);
   } catch (err) {
     console.error(`❌ Error leyendo archivo ${ruta}:`, err.message);
-    return tipo === "array" ? [] : {};
+    return tipo === "array" ? [] : {};  // Retorna array vacío si hay error
   }
 }
 

@@ -33,7 +33,15 @@ async function manejarCompraNueva({ client, numero, media, resultado, tempPath, 
     return;
   }
 
-  const pendienteActual = JSON.parse(fs.readFileSync(paths.pendienteActual));
+  // Lectura segura del archivo pendienteActual.json
+  let pendienteActual = {};
+  try {
+    const contenido = fs.readFileSync(paths.pendienteActual, "utf8").trim();
+    pendienteActual = contenido ? JSON.parse(contenido) : {};
+  } catch (err) {
+    console.error("⚠️ Error leyendo pendienteActual.json:", err.message);
+    pendienteActual = {};  // fallback seguro
+  }
 
   if (pendienteActual.numero !== numero) {
     await msg.reply("⚠️ El número de WhatsApp no coincide con una compra nueva activa. Por favor selecciona un producto del catálogo.");
@@ -43,13 +51,12 @@ async function manejarCompraNueva({ client, numero, media, resultado, tempPath, 
 
   const valorEsperado = parseInt(pendienteActual.valor?.toString().replace(/[^\d]/g, ""), 10);
 
-const clienteData = {
-  nombre: pendienteActual.nombre || "Nuevo Cliente",
-  cuenta: pendienteActual.cuenta || "SERVICIO NUEVO",
-  usuario: pendienteActual.usuario || "",
-  valor: valorEsperado || 0
-};
-
+  const clienteData = {
+    nombre: pendienteActual.nombre || "Nuevo Cliente",
+    cuenta: pendienteActual.cuenta || "SERVICIO NUEVO",
+    usuario: pendienteActual.usuario || "",
+    valor: valorEsperado || 0
+  };
 
   const mensajeAdmin = `🧾 *Pago recibido de ${clienteData.nombre}*\n` +
     `🧩 Referencia: *${resultado.referenciaDetectada}*\n` +

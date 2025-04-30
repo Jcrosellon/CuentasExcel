@@ -1,6 +1,5 @@
 const fs = require("fs");
 const { DateTime } = require("luxon");
-
 const paths = require('../config/paths');
 const rutaPendientesSI = paths.pendientesSI;
 
@@ -13,22 +12,21 @@ async function enviarRecordatorios(client) {
     return;
   }
 
-  const contenido = fs.readFileSync(paths.pendientesSI, "utf8").trim();
-
+  const contenido = fs.readFileSync(rutaPendientesSI, "utf8").trim();
 
   if (!contenido) {
     console.log("⚠️ El archivo pendientes_si.json está vacío.");
     return;
   }
 
-  let pendientesSI = {};
+  let pendientesSI = [];
   try {
-    pendientesSI = JSON.parse(contenido);
-    console.log("✅ pendientes_si.json cargado correctamente.");
+    pendientesSI = contenido ? JSON.parse(contenido) : [];
   } catch (err) {
-    console.error("❌ Error al parsear pendientes_si.json:", err.message);
-    return;
+    console.error("⚠️ Error leyendo pendientes_si.json:", err.message);
+    pendientesSI = [];
   }
+
 
   const ahora = DateTime.now().setZone("America/Bogota");
 

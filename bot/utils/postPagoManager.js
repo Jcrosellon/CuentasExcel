@@ -11,7 +11,8 @@ function cargarConfirmados() {
   try {
     const data = fs.readFileSync(paths.confirmados, "utf8");
 
-    return data ? JSON.parse(data) : {};
+    return leerJsonSeguro(data);
+
   } catch (err) {
     console.error("❌ Error leyendo confirmados.json:", err.message);
     return {};

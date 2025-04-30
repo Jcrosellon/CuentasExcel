@@ -11,7 +11,6 @@ const { manejarCompraNueva } = require("./ocrNuevaCompra");
 const { limpiarTexto } = require("../utils/helpers");
 const { moverFilaOrdenadaPorFechaFinal } = require("../utils/utilsGoogle");
 const paths = require("../config/paths");
-
 const rutaPendienteActual = paths.pendienteActual;
 const rutaPendienteNuevo = paths.pendienteNuevo;
 const rutaPendientes = paths.pendientes;
@@ -144,7 +143,15 @@ return;
 
     // Validación de compra nueva en pendiente_actual
     if (fs.existsSync(rutaPendienteActual)) {
-      const pendienteActual = JSON.parse(fs.readFileSync(paths.pendienteActual));
+      let pendienteActual = {};
+try {
+  const contenidoActual = fs.readFileSync(paths.pendienteActual, "utf8").trim();
+  pendienteActual = contenidoActual ? JSON.parse(contenidoActual) : {};
+} catch (err) {
+  console.error("⚠️ Error leyendo pendiente_actual.json:", err.message);
+  pendienteActual = {};
+}
+
 
       const mismoNumero = pendienteActual.numero === numero;
 
@@ -166,7 +173,15 @@ return;
 
     // Validación de compra nueva en pendiente_nuevo
     if (fs.existsSync(rutaPendienteNuevo)) {
-      const pendienteNuevo = JSON.parse(fs.readFileSync(paths.pendienteNuevo));
+      let pendienteNuevo = {};
+try {
+  const contenidoNuevo = fs.readFileSync(paths.pendienteNuevo, "utf8").trim();
+  pendienteNuevo = contenidoNuevo ? JSON.parse(contenidoNuevo) : {};
+} catch (err) {
+  console.error("⚠️ Error leyendo pendiente_nuevo.json:", err.message);
+  pendienteNuevo = {};
+}
+
 
       const mismoNumeroNuevo = pendienteNuevo.numero === numero;
 
@@ -185,7 +200,11 @@ return;
   } finally {
     await unlink(tempPath).catch(() => {});
   }
+
+  
 }
+
+
 
 module.exports = {
   manejarMediaComprobante,

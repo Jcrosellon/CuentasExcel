@@ -1,11 +1,14 @@
 // /utils/respuestasManager.js
-// Mueve la importación de 'paths' al inicio del archivo
-const paths = require('../config/paths');  // Esta línea debe ir primero
+
 const fs = require("fs");
 const { DateTime } = require("luxon");
 const config = require('../config/configLoader')();
-const rutaRespuestas = paths.respuestas;  // Ahora está correcto
-const rutaMensajesEnviados = paths.mensajesEnviados;  // Ahora está correcto
+const { leerJsonSeguro } = require("../utils/helpers");  // Importamos la función
+
+// Aquí ya está el archivo de rutas
+const paths = require('../config/paths');
+const rutaRespuestas = paths.respuestas;
+const rutaMensajesEnviados = paths.mensajesEnviados;  
 
 // Guarda el último mensaje enviado por número
 function guardarHistorialMensaje(numero, mensaje) {
@@ -14,14 +17,14 @@ function guardarHistorialMensaje(numero, mensaje) {
     try {
       const contenido = fs.readFileSync(paths.mensajesEnviados, "utf8");
 
-      historial = contenido ? JSON.parse(contenido) : {};
+      // Usamos la función segura
+      historial = leerJsonSeguro(paths.mensajesEnviados);
     } catch (err) {
-console.error(`⚠️ Error leyendo ${paths.mensajesEnviados}:`, err.message);
+      console.error(`⚠️ Error leyendo ${paths.mensajesEnviados}:`, err.message);
     }
   }
   historial[numero] = mensaje;
   fs.writeFileSync(paths.mensajesEnviados, JSON.stringify(historial, null, 2));
-
 }
 
 // Devuelve el último mensaje enviado
@@ -30,10 +33,12 @@ function obtenerMensajeAnterior(numero) {
     try {
       const contenido = fs.readFileSync(paths.mensajesEnviados, "utf8");
 
-      const historial = contenido ? JSON.parse(contenido) : {};
+      // Usamos la función segura
+      const historial = leerJsonSeguro(paths.mensajesEnviados);
+
       return historial[numero];
     } catch (err) {
-console.error(`⚠️ Error leyendo ${paths.mensajesEnviados}:`, err.message);
+      console.error(`⚠️ Error leyendo ${paths.mensajesEnviados}:`, err.message);
     }
   }
   return null;
@@ -43,8 +48,7 @@ console.error(`⚠️ Error leyendo ${paths.mensajesEnviados}:`, err.message);
 async function guardarRespuesta(numero, clienteData, respuestaTexto, fechaActual, referencia = "") {
   let registros = [];
   if (fs.existsSync(rutaRespuestas)) {
-    registros = JSON.parse(fs.readFileSync(paths.respuestas));
-
+    registros = leerJsonSeguro(paths.respuestas);  // Usamos la función segura
   }
 
   registros.push({
@@ -57,7 +61,6 @@ async function guardarRespuesta(numero, clienteData, respuestaTexto, fechaActual
   });
 
   fs.writeFileSync(paths.respuestas, JSON.stringify(registros, null, 2));
-
 
   if (config.useGoogleSheet) {
     const { actualizarRespuestaEnGoogle } = require("./utilsGoogle");
@@ -78,10 +81,7 @@ function yaFueConfirmado(numero) {
     if (fs.existsSync("paths.confirmados")) {
       const contenido = fs.readFileSync(paths.confirmados, "utf8");
 
-      confirmados = JSON.parse(contenido);
-      if (!Array.isArray(confirmados)) {
-        confirmados = []; // 💥 Fallback seguro
-      }
+      confirmados = leerJsonSeguro(paths.confirmados);  // Usamos la función segura
     }
   } catch (err) {
     console.error("⚠️ Error leyendo paths.confirmados:", err.message);
@@ -94,7 +94,7 @@ function yaFueConfirmado(numero) {
 function yaRespondido(numero) {
   if (!fs.existsSync(rutaMensajesEnviados)) return false;
   try {
-    const historial = JSON.parse(fs.readFileSync(paths.mensajesEnviados, "utf8"));
+    const historial = leerJsonSeguro(paths.mensajesEnviados);  // Usamos la función segura
 
     return historial.hasOwnProperty(numero);
   } catch (err) {
@@ -110,14 +110,13 @@ function marcarRespondido(numero) {
     try {
       const contenido = fs.readFileSync(paths.mensajesEnviados, "utf8");
 
-      historial = contenido ? JSON.parse(contenido) : {};
+      historial = leerJsonSeguro(paths.mensajesEnviados);  // Usamos la función segura
     } catch (err) {
       console.error("⚠️ Error leyendo historial:", err.message);
     }
   }
   historial[numero] = "RESPONDIDO";
   fs.writeFileSync(paths.mensajesEnviados, JSON.stringify(historial, null, 2));
-
 }
 
 module.exports = {

@@ -4,6 +4,7 @@ const { DateTime } = require("luxon");
 const { leerClientesGoogle } = require("../utils/utilsGoogle")
 const { formatearPesosColombianos, esNumeroValido } = require("../utils/helpers");
 const fs = require("fs");
+const { leerJsonSeguro } = require("../utils/helpers");
 const paths = require("../config/paths");
 const rutaMensajesEnviados = paths.mensajesEnviados;
 const rutaPendientes = paths.pendientes;
@@ -33,19 +34,9 @@ respuesta: c["RESPUESTA"] || ""
 }
 
 function guardarPendiente(numero, nombre, cuenta) {
-  let pendientes = [];
-if (fs.existsSync(rutaPendientes)) {
-  try {
-    const contenido = fs.readFileSync(paths.pendientes, "utf8");
+  let pendientes = leerJsonSeguro(paths.pendientes);
 
-    pendientes = contenido.trim() ? JSON.parse(contenido) : [];
-  } catch (err) {
-    console.error("⚠️ Error leyendo paths.pendientes:", err.message);
-    pendientes = [];
-  }
-}
-
-
+  
   const yaExiste = pendientes.some(p => p.numero === numero && p.cuenta === cuenta.cuenta && !p.confirmado);
   if (!yaExiste) {
     pendientes.push({
