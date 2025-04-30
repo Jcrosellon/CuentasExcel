@@ -1,0 +1,31 @@
+2025/04/30-10:42:34.381 e454c Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel-Bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/30-10:42:34.381 e454c Recovering log #291
+2025/04/30-10:42:34.463 e454c Reusing old log C:\Users\JoseRosellon\CuentasExcel-Bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000291.log 
+2025/04/30-10:42:38.739 e4568 Level-0 table #305: started
+2025/04/30-10:42:38.757 e4568 Level-0 table #305: 479714 bytes OK
+2025/04/30-10:42:38.759 e4568 Delete type=0 #291
+2025/04/30-10:42:38.760 e4568 Manual compaction at level-0 from '\x00\x1e\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x1f\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/30-10:42:40.307 e4568 Compacting 1@1 + 10@2 files
+2025/04/30-10:42:40.374 e4568 Generated table #306@1: 30280 keys, 2187188 bytes
+2025/04/30-10:42:40.404 e4568 Generated table #307@1: 1545 keys, 2132522 bytes
+2025/04/30-10:42:40.431 e4568 Generated table #308@1: 860 keys, 2125761 bytes
+2025/04/30-10:42:40.463 e4568 Generated table #309@1: 1365 keys, 2128772 bytes
+2025/04/30-10:42:40.528 e4568 Generated table #310@1: 28786 keys, 2202454 bytes
+2025/04/30-10:42:40.568 e4568 Generated table #311@1: 4283 keys, 2123092 bytes
+2025/04/30-10:42:40.671 e4568 Generated table #312@1: 112834 keys, 2265683 bytes
+2025/04/30-10:42:40.774 e4568 Generated table #313@1: 112970 keys, 2266325 bytes
+2025/04/30-10:42:40.893 e4568 Generated table #314@1: 113353 keys, 2265059 bytes
+2025/04/30-10:42:40.911 e4568 Generated table #315@1: 14494 keys, 290445 bytes
+2025/04/30-10:42:40.911 e4568 Compacted 1@1 + 10@2 files => 19987301 bytes
+2025/04/30-10:42:40.912 e4568 compacted to: files[ 0 0 10 0 0 0 0 ]
+2025/04/30-10:42:40.913 e4568 Delete type=2 #293
+2025/04/30-10:42:40.913 e4568 Delete type=2 #294
+2025/04/30-10:42:40.913 e4568 Delete type=2 #295
+2025/04/30-10:42:40.913 e4568 Delete type=2 #296
+2025/04/30-10:42:40.913 e4568 Delete type=2 #297
+2025/04/30-10:42:40.913 e4568 Delete type=2 #298
+2025/04/30-10:42:40.913 e4568 Delete type=2 #299
+2025/04/30-10:42:40.913 e4568 Delete type=2 #300
+2025/04/30-10:42:40.913 e4568 Delete type=2 #301
+2025/04/30-10:42:40.913 e4568 Delete type=2 #302
+2025/04/30-10:42:40.913 e4568 Delete type=2 #305
