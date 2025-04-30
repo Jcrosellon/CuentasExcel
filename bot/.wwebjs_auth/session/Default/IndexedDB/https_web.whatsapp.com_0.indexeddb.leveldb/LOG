@@ -1,0 +1,31 @@
+2025/04/12-13:02:49.361 3a94 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/12-13:02:49.361 3a94 Recovering log #1343
+2025/04/12-13:02:49.420 3a94 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/001343.log 
+2025/04/12-13:02:53.615 aab4 Level-0 table #1357: started
+2025/04/12-13:02:53.630 aab4 Level-0 table #1357: 708160 bytes OK
+2025/04/12-13:02:53.632 aab4 Delete type=0 #1343
+2025/04/12-13:02:53.633 aab4 Manual compaction at level-0 from '\x00\xe2\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\xe3\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/12-13:02:55.194 3a94 Compacting 1@1 + 10@2 files
+2025/04/12-13:02:55.289 3a94 Generated table #1358@1: 86278 keys, 2236123 bytes
+2025/04/12-13:02:55.388 3a94 Generated table #1359@1: 97216 keys, 2271108 bytes
+2025/04/12-13:02:55.439 3a94 Generated table #1360@1: 18990 keys, 2217125 bytes
+2025/04/12-13:02:55.461 3a94 Generated table #1361@1: 1106 keys, 2131213 bytes
+2025/04/12-13:02:55.478 3a94 Generated table #1362@1: 660 keys, 2121142 bytes
+2025/04/12-13:02:55.515 3a94 Generated table #1363@1: 13370 keys, 2161094 bytes
+2025/04/12-13:02:55.561 3a94 Generated table #1364@1: 18631 keys, 2162937 bytes
+2025/04/12-13:02:55.639 3a94 Generated table #1365@1: 74351 keys, 2213486 bytes
+2025/04/12-13:02:55.740 3a94 Generated table #1366@1: 112193 keys, 2264673 bytes
+2025/04/12-13:02:55.768 3a94 Generated table #1367@1: 27081 keys, 558318 bytes
+2025/04/12-13:02:55.768 3a94 Compacted 1@1 + 10@2 files => 20337219 bytes
+2025/04/12-13:02:55.770 3a94 compacted to: files[ 0 0 10 0 0 0 0 ]
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1345
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1346
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1347
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1348
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1349
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1350
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1351
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1352
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1353
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1354
+2025/04/12-13:02:55.770 3a94 Delete type=2 #1357

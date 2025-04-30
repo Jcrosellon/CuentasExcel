@@ -1,0 +1,28 @@
+{
+  "name": "cuentasexcel",
+  "version": "1.0.0",
+  "main": "bot.js",
+ "scripts": {
+  "bot": "node bot/index.js",
+  "bot:pm2": "pm2 start bot/index.js --name bot-wa",
+  "restart-bot": "pm2 restart bot-wa",
+  "stop-bot": "pm2 stop bot-wa"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "google-auth-library": "^9.15.1",
+    "googleapis": "^148.0.0",
+    "luxon": "^3.6.1",
+    "node-cron": "^3.0.3",
+    "pm2": "^6.0.5",
+    "puppeteer": "^24.6.0",
+    "qrcode-terminal": "^0.12.0",
+    "sharp": "^0.34.1",
+    "tesseract.js": "^6.0.0",
+    "whatsapp-web.js": "^1.26.0",
+    "xlsx": "^0.18.5"
+  }
+}

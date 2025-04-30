@@ -1,0 +1,31 @@
+2025/04/12-12:54:53.509 a6d4 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/12-12:54:53.509 a6d4 Recovering log #1330
+2025/04/12-12:54:53.608 a6d4 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/001330.log 
+2025/04/12-12:54:55.070 43ec Level-0 table #1344: started
+2025/04/12-12:54:55.090 43ec Level-0 table #1344: 1181927 bytes OK
+2025/04/12-12:54:55.091 43ec Delete type=0 #1330
+2025/04/12-12:54:55.092 4918 Manual compaction at level-0 from '\x00\xe1\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\xe2\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/12-12:54:56.600 4918 Compacting 1@1 + 10@2 files
+2025/04/12-12:54:56.706 4918 Generated table #1345@1: 86331 keys, 2236693 bytes
+2025/04/12-12:54:56.793 4918 Generated table #1346@1: 95933 keys, 2275852 bytes
+2025/04/12-12:54:56.839 4918 Generated table #1347@1: 18993 keys, 2209549 bytes
+2025/04/12-12:54:56.864 4918 Generated table #1348@1: 1074 keys, 2125731 bytes
+2025/04/12-12:54:56.882 4918 Generated table #1349@1: 658 keys, 2123334 bytes
+2025/04/12-12:54:56.925 4918 Generated table #1350@1: 14475 keys, 2165269 bytes
+2025/04/12-12:54:56.968 4918 Generated table #1351@1: 17565 keys, 2162076 bytes
+2025/04/12-12:54:57.058 4918 Generated table #1352@1: 78793 keys, 2219168 bytes
+2025/04/12-12:54:57.158 4918 Generated table #1353@1: 112197 keys, 2265016 bytes
+2025/04/12-12:54:57.182 4918 Generated table #1354@1: 21717 keys, 449677 bytes
+2025/04/12-12:54:57.182 4918 Compacted 1@1 + 10@2 files => 20232365 bytes
+2025/04/12-12:54:57.184 4918 compacted to: files[ 0 0 10 0 0 0 0 ]
+2025/04/12-12:54:57.184 4918 Delete type=2 #1332
+2025/04/12-12:54:57.184 4918 Delete type=2 #1333
+2025/04/12-12:54:57.184 4918 Delete type=2 #1334
+2025/04/12-12:54:57.184 4918 Delete type=2 #1335
+2025/04/12-12:54:57.184 4918 Delete type=2 #1336
+2025/04/12-12:54:57.184 4918 Delete type=2 #1337
+2025/04/12-12:54:57.184 4918 Delete type=2 #1338
+2025/04/12-12:54:57.184 4918 Delete type=2 #1339
+2025/04/12-12:54:57.184 4918 Delete type=2 #1340
+2025/04/12-12:54:57.184 4918 Delete type=2 #1341
+2025/04/12-12:54:57.184 4918 Delete type=2 #1344
