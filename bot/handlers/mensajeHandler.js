@@ -1,5 +1,6 @@
 // /bot/handlers/mensajeHandler.js
-
+// Mueve la importación de 'paths' al inicio del archivo
+const paths = require('../config/paths');  // Esta línea debe ir primero
 const fs = require("fs");
 const { DateTime } = require("luxon");
 const { esNumeroValido } = require("../utils/helpers");
@@ -15,13 +16,12 @@ const {
   yaRespondido,
   marcarRespondido
 } = require("../utils/respuestasManager");
-const paths = require("../config/paths");
 
 const config = require("../config/configLoader")();
 const adminPhone = config.adminPhone + "@c.us";
-const rutaMensajesEnviados = paths.mensajesEnviados;
-const rutaPendientesSI = "./pendientes_si.json";
-const rutaPendienteNuevo = paths.pendienteNuevo;
+const rutaMensajesEnviados = paths.mensajesEnviados;  // Ahora está correcto
+const rutaPendientesSI = paths.pendientesSI;  // Ahora está correcto
+const rutaPendienteNuevo = paths.pendienteNuevo;  // Ahora está correcto
 
 async function manejarMensajeTexto(client, msg) {
   if (!msg.body || typeof msg.body !== 'string') return;
@@ -64,7 +64,8 @@ async function manejarMensajeTexto(client, msg) {
       };
 
       try {
-        fs.writeFileSync(rutaPendienteNuevo, JSON.stringify(pendiente, null, 2));
+        fs.writeFileSync(paths.pendienteNuevo, JSON.stringify(pendiente, null, 2));
+
         console.log("✅ Compra nueva guardada en pendiente_nuevo.json:", pendiente);
       } catch (err) {
         console.error("❌ Error al guardar pendiente_nuevo.json:", err.message);
@@ -106,11 +107,13 @@ async function manejarMensajeTexto(client, msg) {
       await client.sendMessage(numero + "@c.us", obtenerCatalogoTexto());
     }
 
-    const rutaPendientesSI = "./pendientes_si.json";
+    const rutaPendientesSI = paths.pendientesSI;
+
     let pendientesSI = {};
     if (fs.existsSync(rutaPendientesSI)) {
       try {
-        pendientesSI = JSON.parse(fs.readFileSync(rutaPendientesSI, "utf8"));
+        pendientesSI = JSON.parse(fs.readFileSync(paths.pendientesSI, "utf8"));
+
       } catch (err) {
         console.error("❌ Error leyendo pendientes_si.json:", err.message);
       }
@@ -122,7 +125,8 @@ async function manejarMensajeTexto(client, msg) {
       enviado: true
     };
 
-    fs.writeFileSync(rutaPendientesSI, JSON.stringify(pendientesSI, null, 2));
+    fs.writeFileSync(paths.pendientesSI, JSON.stringify(pendientesSI, null, 2));
+
     console.log(`📝 Registro de SI persistente guardado para ${numero}`);
     return;
   }
@@ -181,7 +185,9 @@ async function manejarMensajeTexto(client, msg) {
   let historial = {};
   if (fs.existsSync(rutaMensajesEnviados)) {
     try {
-      const contenido = fs.readFileSync(rutaMensajesEnviados, "utf8");
+      const historial = JSON.parse(fs.readFileSync(paths.mensajesEnviados, "utf8"));
+
+
       historial = contenido ? JSON.parse(contenido) : {};
     } catch (err) {
       console.error("⚠️ Error leyendo historial:", err.message);

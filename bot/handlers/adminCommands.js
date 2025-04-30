@@ -8,7 +8,7 @@ const { generarResumenEstado, obtenerEstadoDeCuentas } = require("../utils/estad
 const { obtenerCatalogoTexto } = require("../utils/catalogoUtils");
 const { limpiarTexto } = require("../utils/helpers");
 const pm2 = require("pm2");
-const paths = require("../config/paths");
+const paths = require('../config/paths');
 const rutaPendientes = paths.pendientes;
 const rutaPendienteNuevo = paths.pendienteNuevo;
 const rutaPendienteActual = paths.pendienteActual;
@@ -16,7 +16,8 @@ const rutaPendienteActual = paths.pendienteActual;
 function cargarJsonSeguro(ruta, tipo = "array") {
   if (!fs.existsSync(ruta)) return tipo === "array" ? [] : {};
   try {
-    const contenido = fs.readFileSync(ruta, "utf8");
+    const contenido = fs.readFileSync(paths.config, "utf8");
+
     if (!contenido.trim()) return tipo === "array" ? [] : {};
     return JSON.parse(contenido);
   } catch (err) {
@@ -49,8 +50,10 @@ module.exports = async function manejarComandosAdmin(msg, client, adminPhone) {
   const textoLimpio = texto.toLowerCase();
 
   if (textoLimpio === "limpiar pendientes") {
-    fs.writeFileSync(rutaPendientes, JSON.stringify([], null, 2));
-    fs.writeFileSync(rutaPendienteNuevo, JSON.stringify([], null, 2));
+fs.writeFileSync(paths.pendientes, JSON.stringify([], null, 2));
+
+fs.writeFileSync(paths.pendienteNuevo, JSON.stringify([], null, 2));
+
     await msg.reply("🧹 Pendientes limpiados con éxito.");
     return;
   }
@@ -197,13 +200,17 @@ if (!pendiente) {
     pendiente.fechaConfirmacion = DateTime.now().toISO();
 
     if (tipo === "renovacion") {
-      fs.writeFileSync(rutaPendienteActual, JSON.stringify(pendiente, null, 2));
+      fs.writeFileSync(paths.pendienteActual, JSON.stringify(pendiente, null, 2));
+
       pendientesRenovacion = pendientesRenovacion.filter(p => limpiarTexto(p.referencia) !== referenciaBuscada);
-      fs.writeFileSync(rutaPendientes, JSON.stringify(pendientesRenovacion, null, 2));
+      fs.writeFileSync(paths.pendientes, JSON.stringify(pendientesRenovacion, null, 2));
+
     } else {
-      fs.writeFileSync(rutaPendienteActual, JSON.stringify(pendiente, null, 2));
+      fs.writeFileSync(paths.pendienteActual, JSON.stringify(pendiente, null, 2));
+
       pendientesCompra = pendientesCompra.filter(p => limpiarTexto(p.referencia) !== referenciaBuscada);
-      fs.writeFileSync(rutaPendienteNuevo, JSON.stringify(pendientesCompra, null, 2));
+      fs.writeFileSync(paths.pendienteNuevo, JSON.stringify(pendientesCompra, null, 2));
+
     }
 
     if (pendiente.imagen && fs.existsSync(pendiente.imagen)) {
@@ -258,9 +265,11 @@ if (fechaFinalAnterior) {
     pendiente.fechaRechazo = DateTime.now().toISO();
     
     if (tipo === "renovacion") {
-      fs.writeFileSync(rutaPendientes, JSON.stringify(pendientesRenovacion, null, 2));
+      fs.writeFileSync(paths.pendientes, JSON.stringify(pendientesRenovacion, null, 2));
+
     } else {
-      fs.writeFileSync(rutaPendienteNuevo, JSON.stringify(pendientesCompra, null, 2));
+      fs.writeFileSync(paths.pendienteNuevo, JSON.stringify(pendientesCompra, null, 2));
+
     }
 
     if (pendiente.imagen && fs.existsSync(pendiente.imagen)) {
@@ -279,7 +288,8 @@ if (fechaFinalAnterior) {
     if (!pendiente || Array.isArray(pendiente)) return;
     pendiente.confirmado = true;
     pendiente.fechaConfirmacion = DateTime.now().toISO();
-    fs.writeFileSync(rutaPendienteActual, JSON.stringify(pendiente, null, 2));
+    fs.writeFileSync(paths.pendienteActual, JSON.stringify(pendiente, null, 2));
+
 
     if (pendiente.imagen && fs.existsSync(pendiente.imagen)) {
       fs.unlinkSync(pendiente.imagen);

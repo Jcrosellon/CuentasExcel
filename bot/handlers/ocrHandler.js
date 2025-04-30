@@ -82,7 +82,8 @@ console.log("🧪 Buscando renovación en pendientes para:", numero);
 if (pendienteRenovacion && pendienteRenovacion.referencia.startsWith('AUTO-')) {
   console.log("🛠 Actualizando referencia de pendiente AUTO- a referencia real:", referenciaDetectada);
   pendienteRenovacion.referencia = referenciaDetectada; // ⚡ Sobreescribimos la referencia automática
-  fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2)); // 🛠 Guardamos el cambio
+  fs.writeFileSync(paths.pendientes, JSON.stringify(pendientes, null, 2)); // 🛠 Guardamos el cambio
+
 }
 
 console.log("🔍 Total pendientes:", pendientes.length);
@@ -143,7 +144,8 @@ return;
 
     // Validación de compra nueva en pendiente_actual
     if (fs.existsSync(rutaPendienteActual)) {
-      const pendienteActual = JSON.parse(fs.readFileSync(rutaPendienteActual));
+      const pendienteActual = JSON.parse(fs.readFileSync(paths.pendienteActual));
+
       const mismoNumero = pendienteActual.numero === numero;
 
       if (mismoNumero && pendienteActual.confirmado) {
@@ -164,7 +166,8 @@ return;
 
     // Validación de compra nueva en pendiente_nuevo
     if (fs.existsSync(rutaPendienteNuevo)) {
-      const pendienteNuevo = JSON.parse(fs.readFileSync(rutaPendienteNuevo));
+      const pendienteNuevo = JSON.parse(fs.readFileSync(paths.pendienteNuevo));
+
       const mismoNumeroNuevo = pendienteNuevo.numero === numero;
 
       if (mismoNumeroNuevo && !pendienteNuevo.confirmado) {

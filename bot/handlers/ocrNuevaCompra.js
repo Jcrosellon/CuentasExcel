@@ -33,7 +33,8 @@ async function manejarCompraNueva({ client, numero, media, resultado, tempPath, 
     return;
   }
 
-  const pendienteActual = JSON.parse(fs.readFileSync(rutaPendienteActual));
+  const pendienteActual = JSON.parse(fs.readFileSync(paths.pendienteActual));
+
   if (pendienteActual.numero !== numero) {
     await msg.reply("⚠️ El número de WhatsApp no coincide con una compra nueva activa. Por favor selecciona un producto del catálogo.");
     await fs.promises.unlink(tempPath).catch(() => {});
@@ -74,7 +75,8 @@ const clienteData = {
     confirmado: false
   };
 
-  fs.writeFileSync(rutaPendienteNuevo, JSON.stringify(nuevoPendiente, null, 2));
+  fs.writeFileSync(paths.pendienteNuevo, JSON.stringify(nuevoPendiente, null, 2));
+
   console.log("🆕 Pendiente de nueva compra registrado:", resultado.referenciaDetectada);
 }
 

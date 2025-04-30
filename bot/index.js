@@ -92,7 +92,8 @@ function reenviarMensajeAnterior(client, numero) {
   let historial = {};
   if (fs.existsSync(rutaMensajesEnviados)) {
     try {
-      const contenido = fs.readFileSync(rutaMensajesEnviados, "utf8");
+      const contenido = fs.readFileSync(paths.mensajesEnviados, "utf8");
+
       historial = contenido ? JSON.parse(contenido) : {};
     } catch (err) {
       console.error("⚠️ Error leyendo historial:", err.message);

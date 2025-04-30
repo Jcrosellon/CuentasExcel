@@ -5,10 +5,12 @@ const paths = require("../config/paths");
 const rutaConfirmados = paths.confirmados;
 const duracionConfirmacionHoras = 24;
 
+
 function cargarConfirmados() {
   if (!fs.existsSync(rutaConfirmados)) return {};
   try {
-    const data = fs.readFileSync(rutaConfirmados, "utf8");
+    const data = fs.readFileSync(paths.confirmados, "utf8");
+
     return data ? JSON.parse(data) : {};
   } catch (err) {
     console.error("❌ Error leyendo confirmados.json:", err.message);
@@ -27,7 +29,8 @@ function yaFueConfirmado(numero) {
 
   if (ahora > expiracion) {
     delete confirmados[numero];
-    fs.writeFileSync(rutaConfirmados, JSON.stringify(confirmados, null, 2));
+    fs.writeFileSync(paths.confirmados, JSON.stringify(confirmados, null, 2));
+
     console.log(`⌛ Confirmación expirada para ${numero}`);
     return false;
   }
@@ -39,7 +42,8 @@ function marcarRespondido(numero) {
   const confirmados = cargarConfirmados();
   if (confirmados[numero]) {
     confirmados[numero].respondido = true;
-    fs.writeFileSync(rutaConfirmados, JSON.stringify(confirmados, null, 2));
+    fs.writeFileSync(paths.confirmados, JSON.stringify(confirmados, null, 2));
+
   }
 }
 

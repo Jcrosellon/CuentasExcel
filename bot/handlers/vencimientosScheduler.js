@@ -36,7 +36,8 @@ function guardarPendiente(numero, nombre, cuenta) {
   let pendientes = [];
 if (fs.existsSync(rutaPendientes)) {
   try {
-    const contenido = fs.readFileSync(rutaPendientes, "utf8");
+    const contenido = fs.readFileSync(paths.pendientes, "utf8");
+
     pendientes = contenido.trim() ? JSON.parse(contenido) : [];
   } catch (err) {
     console.error("⚠️ Error leyendo paths.pendientes:", err.message);
@@ -59,7 +60,8 @@ if (fs.existsSync(rutaPendientes)) {
       confirmado: false,
       esNuevo: false
     });
-    fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
+    fs.writeFileSync(paths.pendientes, JSON.stringify(pendientes, null, 2));
+
   }
 }
 
@@ -91,7 +93,8 @@ function enviarMensajeVencimiento(client) {
       let historial = {};
       if (fs.existsSync(rutaMensajesEnviados)) {
         try {
-          const contenido = fs.readFileSync(rutaMensajesEnviados, "utf8");
+          const contenido = fs.readFileSync(paths.mensajesEnviados, "utf8");
+
           historial = contenido ? JSON.parse(contenido) : {};
         } catch (err) {
           console.error("⚠️ Error leyendo paths.mensajesEnviados:", err.message);
@@ -100,7 +103,8 @@ function enviarMensajeVencimiento(client) {
       }
 
       historial[numero] = mensaje;
-      fs.writeFileSync(rutaMensajesEnviados, JSON.stringify(historial, null, 2));
+      fs.writeFileSync(paths.mensajesEnviados, JSON.stringify(historial, null, 2));
+
     }
   };
 }
@@ -132,7 +136,8 @@ function enviarMensajeMora(client) {
       let historial = {};
       if (fs.existsSync(rutaMensajesEnviados)) {
         try {
-          const contenido = fs.readFileSync(rutaMensajesEnviados, "utf8");
+          const contenido = fs.readFileSync(paths.mensajesEnviados, "utf8");
+
           historial = contenido ? JSON.parse(contenido) : {};
         } catch (err) {
           const paths = require("../config/paths"); // o la ruta correcta
@@ -142,7 +147,8 @@ console.error(`⚠️ Error leyendo ${paths.mensajesEnviados}:`, err.message);
       }
 
       historial[numero] = mensaje;
-      fs.writeFileSync(rutaMensajesEnviados, JSON.stringify(historial, null, 2));
+      fs.writeFileSync(paths.mensajesEnviados, JSON.stringify(historial, null, 2));
+
     }
   };
 }

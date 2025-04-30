@@ -12,7 +12,8 @@ async function manejarRenovacion({ client, numero, media, resultado, tempPath, m
   const valorDetectado = resultado.valorDetectado || 0;
 
   const pendientes = fs.existsSync(rutaPendientes)
-    ? JSON.parse(fs.readFileSync(rutaPendientes))
+  ? JSON.parse(fs.readFileSync(paths.pendientes))
+
     : [];
 
   const pendiente = pendientes.find(p => p.numero === numero && !p.confirmado);
@@ -68,7 +69,8 @@ async function manejarRenovacion({ client, numero, media, resultado, tempPath, m
 
   await msg.reply("🕓 Comprobante enviado para validación. Te notificaremos pronto. 🙌");
 
-  fs.writeFileSync(rutaPendientes, JSON.stringify(pendientes, null, 2));
+  fs.writeFileSync(paths.pendientes, JSON.stringify(pendientes, null, 2));
+
   console.log("📩 Pendiente agregado para revisión (renovación):", referenciaDetectada);
 }
 

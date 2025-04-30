@@ -1,7 +1,9 @@
 const fs = require("fs");
 const { DateTime } = require("luxon");
 
-const rutaPendientesSI = "./pendientes_si.json";
+const paths = require('../config/paths');
+const rutaPendientesSI = paths.pendientesSI;
+
 
 async function enviarRecordatorios(client) {
   console.log("📦 Iniciando ejecución de enviarRecordatorios.js...");
@@ -11,7 +13,8 @@ async function enviarRecordatorios(client) {
     return;
   }
 
-  const contenido = fs.readFileSync(rutaPendientesSI, "utf8").trim();
+  const contenido = fs.readFileSync(paths.pendientesSI, "utf8").trim();
+
 
   if (!contenido) {
     console.log("⚠️ El archivo pendientes_si.json está vacío.");

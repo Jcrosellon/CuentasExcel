@@ -1,3 +1,5 @@
+const paths = require('../config/paths');
+
 // /bot/utils/helpers.js
 const fs = require("fs");
 function formatearPesosColombianos(valor) {
@@ -36,7 +38,8 @@ async function enviarMensajeSeguro(client, numero, mensaje) {
 function cargarJsonSeguro(ruta, porDefecto = []) {
   try {
     if (!fs.existsSync(ruta)) return porDefecto;
-    const texto = fs.readFileSync(ruta, "utf8");
+    const texto = fs.readFileSync(paths.archivo, "utf8");
+
     return JSON.parse(texto || "[]");
   } catch (err) {
     console.warn(`⚠️ Error leyendo ${ruta}. Usando valor por defecto.`);
