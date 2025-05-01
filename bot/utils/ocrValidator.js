@@ -6,7 +6,8 @@ async function preprocesarImagen(rutaOriginal, rutaProcesada) {
   await sharp(rutaOriginal)
     .resize({ width: 1000 })
     .grayscale()
-    .threshold(120).sharpen()
+    .threshold(150)
+    .sharpen()
     .toFile(rutaProcesada);
 }
 
@@ -31,7 +32,7 @@ function contieneNumeroDestino(texto) {
     /3183192913/,
     /nequi/,
     /daviplata/,
-    /rosellon/,
+    /rosellon/
   ];
   return patrones.some(p => p.test(limpio));
 }
@@ -60,28 +61,28 @@ const validarComprobante = async (rutaImagen) => {
     /valor/i
   ];
 
-  // Buscar primero basado en palabras clave
-  for (let i = 0; i < lineas.length; i++) {
-    const linea = lineas[i];
+ // Búsqueda directa por patrones exactos conocidos
+for (let i = 0; i < lineas.length; i++) {
+  const linea = lineas[i];
 
-    if (patronesClave.some(p => p.test(linea))) {
-      const matchMismaLinea = linea.match(/([\d.,]+)/);
-      if (matchMismaLinea) {
-        valorDetectado = convertirValor(matchMismaLinea[1]);
-        break;
-      }
-
-      if (lineas[i + 1]) {
-        const matchSiguiente = lineas[i + 1].match(/([\d.,]+)/);
-        if (matchSiguiente) {
-          valorDetectado = convertirValor(matchSiguiente[1]);
-          break;
-        }
-      }
-    }
+  // Caso 1: "Número Aprobación 58486" (todo en una línea)
+  const matchNumAprob = linea.match(/número\s+aprobaci[oó]n[:\s\-#]*([0-9]{4,})/i);
+  if (matchNumAprob) {
+    referenciaDetectada = matchNumAprob[1].trim();
+    break;
   }
 
-  // Si no encontramos con claves, usamos el método de los "$"
+  // Caso 2: "N° Aprobación:" en una línea y el valor en la siguiente
+  if (/n[°º]?\s*aprobaci[oó]n[:\s\-]*$/i.test(linea) && lineas[i + 1]) {
+    const matchSiguiente = lineas[i + 1].match(/([0-9]{4,})/);
+    if (matchSiguiente) {
+      referenciaDetectada = matchSiguiente[1].trim();
+      break;
+    }
+  }
+}
+
+
   if (valorDetectado === 0) {
     const posiblesValores = [...textoPlano.matchAll(/\$\s?([\d.,]+)/g)]
       .map(m => convertirValor(m[1]))
@@ -90,69 +91,52 @@ const validarComprobante = async (rutaImagen) => {
     valorDetectado = posiblesValores.reduce((sum, v) => sum + v, 0);
   }
 
-  // Validación de número destino
   const numeroValido = contieneNumeroDestino(textoPlano);
-  if (!numeroValido) console.warn("⚠️ Número o nombre de destino no encontrado");
-
-  // Detectar referencia
-  let referenciaDetectada = "";
-  const patronesReferencia = [
-    /n[\u00fau]mero\s+de\s+comprobante[:\s\-]*([a-z0-9\-]+)/i,
-    /n[\u00ba\u00b0o]\s*[:\-]?\s*([a-z0-9\-]{4,})/i,
-    /referencia[:\s\-]*([a-z0-9\-]{4,})/i,
-    /comprobante\s*no\.?\s*[:\-]?\s*([a-z0-9\-]+)/i,
-    /aprobaci[\u00f3o]n[:\s\-#]*([a-z0-9\-]{4,})/i,
-    /motivo[:\s\-]*([a-z0-9\s]{4,})/i
-  ];
-
-  for (let i = 0; i < lineas.length; i++) {
-    const linea = lineas[i];
-
-    for (const patron of patronesReferencia) {
-      const match = linea.match(patron);
-      if (match && match[1]) {
-        referenciaDetectada = match[1].trim();
-        break;
-      }
-    }
-
-    if (!referenciaDetectada) {
-      // Manejo cuando la línea dice solo "Referencia" o similar y el valor está debajo
-      if (/referencia[:\s\-]*$/i.test(linea) && lineas[i + 1]) {
-        const siguiente = lineas[i + 1].trim();
-        const posibleRefAbajo = siguiente.match(/\b[a-z0-9\-]{4,}\b/i);
-        if (posibleRefAbajo) {
-          referenciaDetectada = posibleRefAbajo[0].trim();
-          break;
-        }
-      }
-    
-      // Otro caso: "Número de comprobante" separado de su valor
-      if (/n[\u00fau]mero\s+de\s+comprobante/i.test(linea) && lineas[i + 1]) {
-        const siguiente = lineas[i + 1].trim();
-        const posibleRefAbajo = siguiente.match(/\b[a-z0-9\-]{4,}\b/i);
-        if (posibleRefAbajo) {
-          referenciaDetectada = posibleRefAbajo[0].trim();
-          break;
-        }
-      }
-    }
-    
-
-    if (referenciaDetectada) break;
+  if (!numeroValido) {
+    console.warn("⚠️ Número o nombre de destino no encontrado");
   }
-  
 
-// Solo ejecutar si aún no se ha detectado una referencia clara
+  let referenciaDetectada = "";
+
+// ✅ Detección robusta de referencia (N° Aprobación, N* Aprobación, etc.)
+for (let i = 0; i < lineas.length; i++) {
+  const linea = lineas[i];
+
+  // Ej: "N° Aprobación: 008857"
+  const matchInline = linea.match(/n[°º\*]?\s*aprobaci[oó]n[:\s\-#]*([0-9]{4,8})/i);
+  if (matchInline && matchInline[1]) {
+    referenciaDetectada = matchInline[1].trim();
+    break;
+  }
+
+  // Ej: "N° Aprobación:" en una línea y el número en la siguiente
+  if (/n[°º\*]?\s*aprobaci[oó]n[:\s\-]*$/i.test(linea) && lineas[i + 1]) {
+    const matchNext = lineas[i + 1].match(/([0-9]{4,8})/);
+    if (matchNext && matchNext[1]) {
+      referenciaDetectada = matchNext[1].trim();
+      break;
+    }
+  }
+}
+
+// ✅ Fallback solo si aún no se detectó una referencia clara
 if (!referenciaDetectada || referenciaDetectada.length < 5) {
   const posibles = textoPlano.match(/\b[a-z0-9]{5,}\b/gi);
   if (posibles) {
     const filtradas = posibles.filter(ref =>
       !["de", "no", "va", "para"].includes(ref.toLowerCase()) &&
-      /^[a-z]*\d+[a-z\d]*$/i.test(ref)  // debe tener números para ser referencia válida
+      /^[a-z]*\d+[a-z\d]*$/i.test(ref)
     );
-    if (filtradas.length) {
-      referenciaDetectada = filtradas[filtradas.length - 1].trim();
+
+    const telefonoRegex = /^3\d{9}$/; // típico número colombiano
+    const excluidos = ["3183192913", "3111234567", "3001234567"];
+
+    const posiblesFiltradas = filtradas.filter(ref =>
+      !telefonoRegex.test(ref) && !excluidos.includes(ref)
+    );
+
+    if (posiblesFiltradas.length) {
+      referenciaDetectada = posiblesFiltradas[posiblesFiltradas.length - 1].trim();
     }
   }
 }
@@ -167,7 +151,7 @@ if (!referenciaDetectada || referenciaDetectada.length < 5) {
   console.log("🔍 Resultado final:", { valorDetectado, numeroValido, referenciaDetectada });
 
   return {
-    valido: numeroValido && !!referenciaDetectada,
+    valido: !!referenciaDetectada, // ya no se requiere que el número también sea válido
     coincidencias: {
       numero: numeroValido,
       referencia: !!referenciaDetectada

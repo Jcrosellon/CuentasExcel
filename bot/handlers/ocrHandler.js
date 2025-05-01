@@ -78,12 +78,20 @@ const pendientes = cargarJsonSeguro(rutaPendientes);
 
 const pendienteRenovacion = pendientes.find(p => p.numero === numero && !p.confirmado);
 console.log("🧪 Buscando renovación en pendientes para:", numero);
-if (pendienteRenovacion && pendienteRenovacion.referencia.startsWith('AUTO-')) {
-  console.log("🛠 Actualizando referencia de pendiente AUTO- a referencia real:", referenciaDetectada);
-  pendienteRenovacion.referencia = referenciaDetectada; // ⚡ Sobreescribimos la referencia automática
-  fs.writeFileSync(paths.pendientes, JSON.stringify(pendientes, null, 2)); // 🛠 Guardamos el cambio
+if (pendienteRenovacion && referenciaDetectada) {
+  const refActual = (pendienteRenovacion.referencia || "").toLowerCase();
+  const esProvisional = 
+    refActual.startsWith("auto-") ||
+    refActual.length < 5 ||
+    ["logy", "test", "none", "error", "pendiente"].includes(refActual);
 
+  if (esProvisional) {
+    console.log("🛠 Actualizando referencia provisional:", refActual, "→", referenciaDetectada);
+    pendienteRenovacion.referencia = referenciaDetectada;
+    fs.writeFileSync(paths.pendientes, JSON.stringify(pendientes, null, 2));
+  }
 }
+
 
 console.log("🔍 Total pendientes:", pendientes.length);
 console.log("📋 Coincidencia encontrada:", pendienteRenovacion);
@@ -103,7 +111,7 @@ if (pendienteRenovacion) {
   console.log(`💰 Valor pendiente: ${valorPendiente}, valor detectado: ${valorDetectado}, diferencia: ${diferencia}, válido: ${valorValido}`);
 
   if (valorDetectado < valorPendiente) {
-    await msg.reply(`⚠️ El valor del comprobante no coincide.\n\nEsperábamos: $${valorEsperado.toLocaleString()}\nDetectamos: $${valorDetectado.toLocaleString()}\n\nPor favor revisa el pago y vuelve a enviar el comprobante. 🙏`);
+    await msg.reply(`⚠️ El valor del comprobante no coincide.\n\nEsperábamos: $${valorPendiente.toLocaleString()}\nDetectamos: $${valorDetectado.toLocaleString()}\n\nPor favor revisa el pago y vuelve a enviar el comprobante. 🙏`);
     return;
  }
  
@@ -132,9 +140,9 @@ await client.sendMessage(numeroAdmin, media);
 
 await delay(1000); // 🔥 Otro pequeño delay para cargar bien la imagen
 
-await client.sendMessage(numeroAdmin, ```CONFIRMADO ${referenciaCliente}```);
+await client.sendMessage(numeroAdmin, `CONFIRMADO ${referenciaCliente}`);
 await delay(500); // Pequeño delay para que no los envíe juntos
-await client.sendMessage(numeroAdmin, ```RECHAZADO ${referenciaCliente}```);
+await client.sendMessage(numeroAdmin, `RECHAZADO ${referenciaCliente}`);
 
 await msg.reply("✅ Hemos recibido tu comprobante. Estamos validándolo, pronto recibirás la confirmación. ⏳");
 
