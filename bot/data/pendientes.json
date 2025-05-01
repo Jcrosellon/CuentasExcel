@@ -65,20 +65,8 @@
     "cuenta": "IPTV",
     "usuario": "",
     "valor": "20.000",
-    "referencia": "AUTO-1746052440991",
+    "referencia": "logy",
     "fecha": "2025-04-30T17:34:00.991-05:00",
-    "imagen": "",
-    "confirmado": false,
-    "esNuevo": false
-  },
-  {
-    "numero": "573103320709",
-    "nombre": "JORGE ESCUDERO",
-    "cuenta": "TELE LATINO",
-    "usuario": "",
-    "valor": "20.000",
-    "referencia": "AUTO-1746052441021",
-    "fecha": "2025-04-30T17:34:01.021-05:00",
     "imagen": "",
     "confirmado": false,
     "esNuevo": false
@@ -151,6 +139,18 @@
     "valor": "15.000",
     "referencia": "AUTO-1746052442393",
     "fecha": "2025-04-30T17:34:02.393-05:00",
+    "imagen": "",
+    "confirmado": false,
+    "esNuevo": false
+  },
+  {
+    "numero": "573114207673",
+    "nombre": "JC ROSELLON",
+    "cuenta": "IPTV",
+    "usuario": "",
+    "valor": "1.000",
+    "referencia": "logy",
+    "fecha": "2025-04-30T19:40:27.109-05:00",
     "imagen": "",
     "confirmado": false,
     "esNuevo": false

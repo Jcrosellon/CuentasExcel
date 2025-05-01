@@ -132,9 +132,9 @@ await client.sendMessage(numeroAdmin, media);
 
 await delay(1000); // 🔥 Otro pequeño delay para cargar bien la imagen
 
-await client.sendMessage(numeroAdmin, `*CONFIRMADO* ${referenciaCliente}`);
+await client.sendMessage(numeroAdmin, ```CONFIRMADO ${referenciaCliente}```);
 await delay(500); // Pequeño delay para que no los envíe juntos
-await client.sendMessage(numeroAdmin, `*RECHAZADO* ${referenciaCliente}`);
+await client.sendMessage(numeroAdmin, ```RECHAZADO ${referenciaCliente}```);
 
 await msg.reply("✅ Hemos recibido tu comprobante. Estamos validándolo, pronto recibirás la confirmación. ⏳");
 

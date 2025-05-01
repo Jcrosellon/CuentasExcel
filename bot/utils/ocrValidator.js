@@ -6,7 +6,7 @@ async function preprocesarImagen(rutaOriginal, rutaProcesada) {
   await sharp(rutaOriginal)
     .resize({ width: 1000 })
     .grayscale()
-    .threshold(150)
+    .threshold(120).sharpen()
     .toFile(rutaProcesada);
 }
 
@@ -116,25 +116,47 @@ const validarComprobante = async (rutaImagen) => {
       }
     }
 
-    if (!referenciaDetectada && /n[\u00fau]mero\s+de\s+comprobante/i.test(linea) && lineas[i + 1]) {
-      const siguiente = lineas[i + 1].trim();
-      const posibleNumero = siguiente.match(/\b[a-z0-9\-]{4,}\b/i);
-      if (posibleNumero) {
-        referenciaDetectada = posibleNumero[0].trim();
-        break;
+    if (!referenciaDetectada) {
+      // Manejo cuando la línea dice solo "Referencia" o similar y el valor está debajo
+      if (/referencia[:\s\-]*$/i.test(linea) && lineas[i + 1]) {
+        const siguiente = lineas[i + 1].trim();
+        const posibleRefAbajo = siguiente.match(/\b[a-z0-9\-]{4,}\b/i);
+        if (posibleRefAbajo) {
+          referenciaDetectada = posibleRefAbajo[0].trim();
+          break;
+        }
+      }
+    
+      // Otro caso: "Número de comprobante" separado de su valor
+      if (/n[\u00fau]mero\s+de\s+comprobante/i.test(linea) && lineas[i + 1]) {
+        const siguiente = lineas[i + 1].trim();
+        const posibleRefAbajo = siguiente.match(/\b[a-z0-9\-]{4,}\b/i);
+        if (posibleRefAbajo) {
+          referenciaDetectada = posibleRefAbajo[0].trim();
+          break;
+        }
       }
     }
+    
 
     if (referenciaDetectada) break;
   }
+  
 
-  if (!referenciaDetectada) {
-    const posibles = textoPlano.match(/\b[a-z0-9]{5,}\b/gi);
-    if (posibles) {
-      const filtradas = posibles.filter(ref => !["de", "no", "va", "para"].includes(ref.toLowerCase()));
-      referenciaDetectada = filtradas[filtradas.length - 1] || "";
+// Solo ejecutar si aún no se ha detectado una referencia clara
+if (!referenciaDetectada || referenciaDetectada.length < 5) {
+  const posibles = textoPlano.match(/\b[a-z0-9]{5,}\b/gi);
+  if (posibles) {
+    const filtradas = posibles.filter(ref =>
+      !["de", "no", "va", "para"].includes(ref.toLowerCase()) &&
+      /^[a-z]*\d+[a-z\d]*$/i.test(ref)  // debe tener números para ser referencia válida
+    );
+    if (filtradas.length) {
+      referenciaDetectada = filtradas[filtradas.length - 1].trim();
     }
   }
+}
+
 
   referenciaDetectada = referenciaDetectada.replace(/\s+/g, '');
   if (referenciaDetectada.length <= 2 || ["de", "no", "para"].includes(referenciaDetectada.toLowerCase())) {
