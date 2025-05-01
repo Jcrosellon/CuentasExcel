@@ -6,7 +6,6 @@ const { DateTime } = require("luxon");
 const { esNumeroValido } = require("../utils/helpers");
 const { leerClientesGoogle } = require("../utils/utilsGoogle");
 const { leerJsonSeguro } = require("../utils/helpers");
-
 const {
   buscarProductoPorNumero,
   obtenerCatalogoTexto,

@@ -34,36 +34,38 @@ async function enviarMensajeSeguro(client, numero, mensaje) {
   }
 }
 
+// Función para leer archivos JSON de forma segura
 function leerJsonSeguro(ruta) {
   try {
     const contenido = fs.readFileSync(ruta, "utf8").trim();
-
-    // Si el archivo está vacío, devolvemos un valor por defecto
+    
+    // Si el archivo está vacío, devolvemos un array vacío
     if (!contenido) {
       console.error(`⚠️ El archivo ${ruta} está vacío.`);
-      return [];  // Si el archivo está vacío, retornamos un array vacío
+      return [];
     }
 
     return JSON.parse(contenido);
   } catch (err) {
     console.error(`⚠️ Error leyendo o parseando ${ruta}:`, err.message);
-    return [];  // Retornamos un array vacío si hubo algún error
+    return [];  // Si ocurre un error, devolvemos un array vacío
   }
 }
+
+// Leer 'pendientes.json' de manera segura
+let pendientes = leerJsonSeguro(paths.pendientes);  // Usamos la función segura para leer el archivo JSON
+
 
 
 function cargarJsonSeguro(ruta, porDefecto = []) {
   try {
-    if (!fs.existsSync(ruta)) return porDefecto;
-    const texto = fs.readFileSync(ruta, "utf8");
-
-    return leerJsonSeguro(texto || "[]");
-
+    return leerJsonSeguro(ruta);  // ✅ ahora sí le pasa una ruta real
   } catch (err) {
     console.warn(`⚠️ Error leyendo ${ruta}. Usando valor por defecto.`);
     return porDefecto;
   }
 }
+
 
 module.exports = {
   formatearPesosColombianos,

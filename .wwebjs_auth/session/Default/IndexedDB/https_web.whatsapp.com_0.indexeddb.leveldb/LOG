@@ -1,0 +1,26 @@
+2025/04/30-19:05:41.898 72458 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel-Bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/MANIFEST-000001
+2025/04/30-19:05:41.898 72458 Recovering log #448
+2025/04/30-19:05:41.996 72458 Reusing old log C:\Users\JoseRosellon\CuentasExcel-Bot\.wwebjs_auth\session\Default\IndexedDB\https_web.whatsapp.com_0.indexeddb.leveldb/000448.log 
+2025/04/30-19:05:43.488 b1c10 Level-0 table #463: started
+2025/04/30-19:05:43.511 b1c10 Level-0 table #463: 1154364 bytes OK
+2025/04/30-19:05:43.513 b1c10 Delete type=0 #448
+2025/04/30-19:05:43.514 b1c10 Manual compaction at level-0 from '\x001\x00\x00\x00' @ 72057594037927935 : 1 .. '\x002\x00\x00\x00' @ 0 : 0; will stop at '\x001\x00\x00\x05' @ 1851498 : 1
+2025/04/30-19:05:43.514 b1c10 Compacting 1@0 + 0@1 files
+2025/04/30-19:05:43.537 b1c10 Generated table #464@0: 10369 keys, 301097 bytes
+2025/04/30-19:05:43.537 b1c10 Compacted 1@0 + 0@1 files => 301097 bytes
+2025/04/30-19:05:43.539 b1c10 compacted to: files[ 0 1 10 0 0 0 0 ]
+2025/04/30-19:05:43.539 b1c10 Delete type=2 #463
+2025/04/30-19:05:43.540 b1c10 Manual compaction at level-0 from '\x001\x00\x00\x05' @ 1851498 : 1 .. '\x002\x00\x00\x00' @ 0 : 0; will stop at (end)
+2025/04/30-19:05:45.224 b1c10 Compacting 1@1 + 10@2 files
+2025/04/30-19:05:45.356 b1c10 Generated table #465@1: 55648 keys, 2216571 bytes
+2025/04/30-19:05:45.447 b1c10 Generated table #466@1: 2024 keys, 2143104 bytes
+2025/04/30-19:05:45.467 b1c10 Generated table #467@1: 840 keys, 2125680 bytes
+2025/04/30-19:05:45.502 b1c10 Generated table #468@1: 801 keys, 2126845 bytes
+2025/04/30-19:05:45.598 b1c10 Generated table #469@1: 12744 keys, 2159728 bytes
+2025/04/30-19:05:45.710 b1c10 Generated table #470@1: 20111 keys, 2173456 bytes
+2025/04/30-19:05:45.782 b1c10 Generated table #471@1: 45187 keys, 2177686 bytes
+2025/04/30-19:05:45.894 b1c10 Generated table #472@1: 113271 keys, 2266001 bytes
+2025/04/30-19:05:46.031 b1c10 Generated table #473@1: 112737 keys, 2264190 bytes
+2025/04/30-19:05:46.136 b1c10 Generated table #474@1: 92138 keys, 1842174 bytes
+2025/04/30-19:05:46.136 b1c10 Compacted 1@1 + 10@2 files => 21495435 bytes
+2025/04/30-19:05:46.138 b1c10 compacted to: files[ 0 0 10 0 0 0 0 ]
