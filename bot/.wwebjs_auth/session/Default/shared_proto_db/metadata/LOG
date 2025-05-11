@@ -1,3 +1,2 @@
-2025/04/11-17:47:37.734 b1a8 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\shared_proto_db\metadata/MANIFEST-000001
-2025/04/11-17:47:37.737 b1a8 Recovering log #3
-2025/04/11-17:47:37.738 b1a8 Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\shared_proto_db\metadata/000003.log 
+2025/05/10-12:20:22.652 d7b74 Creating DB C:\Users\JoseRosellon\CuentasExcel-Bot\bot\.wwebjs_auth\session\Default\shared_proto_db\metadata since it was missing.
+2025/05/10-12:20:22.662 d7b74 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel-Bot\bot\.wwebjs_auth\session\Default\shared_proto_db\metadata/MANIFEST-000001

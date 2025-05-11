@@ -29,12 +29,12 @@ client.on("ready", async () => {
   await client.sendMessage(adminPhone, "✅ *El bot se ha iniciado correctamente*.");
 
 
-  await procesarVencimientos(client, "573114207673");
+  await procesarVencimientos(client);
   enviarVencimientosProgramados(client);
 
   // 🕛 Ejecutar recordatorios todos los días a las 12:00 PM
   cron.schedule("30 12 * * *", async () => {
-    console.log("⏰ Ejecutando recordatorios programados (12:00 PM)...");
+    console.log("⏰ Ejecutando recordatorios programados (12:30 PM)...");
     const { enviarRecordatorios } = require("./handlers/enviarRecordatorios");
     await enviarRecordatorios(client);
   });

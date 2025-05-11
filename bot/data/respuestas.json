@@ -78,5 +78,125 @@
     "valor": "1.000",
     "respuesta": "SI",
     "fecha": "2025-04-30"
+  },
+  {
+    "nombre": "KEILY",
+    "numero": "573104845303",
+    "cuenta": "YOUTUBE PREMIUM",
+    "valor": "10.000",
+    "respuesta": "SI",
+    "fecha": "2025-05-02"
+  },
+  {
+    "nombre": "JOSE SAY",
+    "numero": "573043489274",
+    "cuenta": "YOUTUBE PREMIUM",
+    "valor": "15.000",
+    "respuesta": "SI",
+    "fecha": "2025-05-02"
+  },
+  {
+    "nombre": "FARES",
+    "numero": "573207142767",
+    "cuenta": "TELE LATINO",
+    "valor": "15.000",
+    "respuesta": "SI",
+    "fecha": "2025-05-02"
+  },
+  {
+    "nombre": "WILMER",
+    "numero": "573103273377",
+    "cuenta": "TELE LATINO",
+    "valor": "30.000",
+    "respuesta": "SI",
+    "fecha": "2025-05-03"
+  },
+  {
+    "nombre": "JC ROSELLON",
+    "numero": "573114207673",
+    "cuenta": "IPTV",
+    "valor": "1.000",
+    "respuesta": "SI",
+    "fecha": "2025-05-03"
+  },
+  {
+    "nombre": "DARJOC",
+    "numero": "573118650930",
+    "cuenta": "DISNEY ESTANDAR",
+    "valor": "8.000",
+    "respuesta": "NO",
+    "fecha": "2025-05-04"
+  },
+  {
+    "nombre": "ESPOSA",
+    "numero": "573022878024",
+    "cuenta": "YOUTUBE PREMIUM",
+    "valor": "10.000",
+    "respuesta": "SI",
+    "fecha": "2025-05-04"
+  },
+  {
+    "nombre": "KOKO",
+    "numero": "573022878024",
+    "cuenta": "MAX ESTANDAR",
+    "valor": "6.000",
+    "respuesta": "SI",
+    "fecha": "2025-05-04"
+  },
+  {
+    "nombre": "MORENO ROMERO",
+    "numero": "573046159094",
+    "cuenta": "TELE LATINO",
+    "valor": "30.000",
+    "respuesta": "SI",
+    "fecha": "2025-05-06"
+  },
+  {
+    "nombre": "ESPOSA",
+    "numero": "573022878024",
+    "cuenta": "YOUTUBE PREMIUM",
+    "valor": "10.000",
+    "respuesta": "SI",
+    "fecha": "2025-05-06"
+  },
+  {
+    "nombre": "KOKO",
+    "numero": "573022878024",
+    "cuenta": "MAX ESTANDAR",
+    "valor": "6.000",
+    "respuesta": "SI",
+    "fecha": "2025-05-06"
+  },
+  {
+    "nombre": "GENUIS",
+    "numero": "573016941530",
+    "cuenta": "TELE LATINO",
+    "valor": "15.000",
+    "respuesta": "SI",
+    "fecha": "2025-05-08"
+  },
+  {
+    "nombre": "DILSON",
+    "numero": "573112892302",
+    "cuenta": "IPTV",
+    "valor": "20.000",
+    "respuesta": "NO",
+    "fecha": "2025-05-10"
+  },
+  {
+    "nombre": "JHON ESCOBAR",
+    "numero": "573134179608",
+    "cuenta": "TELE LATINO",
+    "valor": "20.000",
+    "respuesta": "SI",
+    "fecha": "2025-05-10"
+  },
+  {
+    "nombre": "JHON ESCOBAR",
+    "numero": "573134179608",
+    "cuenta": "TELE LATINO",
+    "valor": "20.000",
+    "respuesta": "SI",
+    "fecha": "2025-05-10"
   }
 ]

@@ -1,30 +1,30 @@
 const fs = require("fs");
 const { DateTime } = require("luxon");
 const paths = require('../config/paths');
-const rutaPendientesSI = paths.pendientesSI;
+const rutaRespuestas = paths.respuestas;
 
 
 async function enviarRecordatorios(client) {
   console.log("📦 Iniciando ejecución de enviarRecordatorios.js...");
 
-  if (!fs.existsSync(rutaPendientesSI)) {
-    console.log("❌ No existe el archivo pendientes_si.json");
+  if (!fs.existsSync(rutaRespuestas)) {
+    console.log("❌ No existe el archivo respuestas.json");
     return;
   }
 
-  const contenido = fs.readFileSync(rutaPendientesSI, "utf8").trim();
+  const contenido = fs.readFileSync(rutaRespuestas, "utf8").trim();
 
   if (!contenido) {
-    console.log("⚠️ El archivo pendientes_si.json está vacío.");
+    console.log("⚠️ El archivo respuestas.json está vacío.");
     return;
   }
 
-  let pendientesSI = [];
+  let respuestas = [];
   try {
-    pendientesSI = contenido ? JSON.parse(contenido) : [];
+    respuestas = contenido ? JSON.parse(contenido) : [];
   } catch (err) {
-    console.error("⚠️ Error leyendo pendientes_si.json:", err.message);
-    pendientesSI = [];
+    console.error("⚠️ Error leyendo respuestas.json:", err.message);
+    respuestas = [];
   }
 
 
@@ -32,8 +32,8 @@ async function enviarRecordatorios(client) {
 
   let encontrados = 0;
 
-  for (const numero in pendientesSI) {
-    const p = pendientesSI[numero];
+  for (const numero in respuestas) {
+    const p = respuestas[numero];
 
     console.log(`🔍 Revisando número: ${numero}`);
     console.log(`   👉 Intención: ${p.intencion}, Enviado: ${p.enviado}, Confirmado: ${p.confirmado || false}, Fecha: ${p.fecha}`);
