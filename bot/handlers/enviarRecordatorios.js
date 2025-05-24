@@ -3,7 +3,6 @@ const { DateTime } = require("luxon");
 const paths = require('../config/paths');
 const rutaRespuestas = paths.respuestas;
 
-
 async function enviarRecordatorios(client) {
   console.log("📦 Iniciando ejecución de enviarRecordatorios.js...");
 
@@ -21,49 +20,65 @@ async function enviarRecordatorios(client) {
 
   let respuestas = [];
   try {
-    respuestas = contenido ? JSON.parse(contenido) : [];
+    respuestas = contenido ? normalizarRespuestas(JSON.parse(contenido)) : [];
   } catch (err) {
     console.error("⚠️ Error leyendo respuestas.json:", err.message);
     respuestas = [];
   }
 
-
   const ahora = DateTime.now().setZone("America/Bogota");
-
   let encontrados = 0;
 
-  for (const numero in respuestas) {
-    const p = respuestas[numero];
+  let nuevasRespuestas = [];
 
-    console.log(`🔍 Revisando número: ${numero}`);
-    console.log(`   👉 Intención: ${p.intencion}, Enviado: ${p.enviado}, Confirmado: ${p.confirmado || false}, Fecha: ${p.fecha}`);
+for (const p of respuestas) {
+  const numero = p.numero;
 
-    if (p.intencion === "si" && p.enviado && p.fecha && !p.confirmado) {
-      const fechaRespuesta = DateTime.fromISO(p.fecha).setZone("America/Bogota");
-      const horasPasadas = ahora.diff(fechaRespuesta, "hours").hours;
+  if (
+    p.respuesta?.toLowerCase() === "si" &&
+    p.fecha &&
+    !p.confirmado
+  ) {
+    const fechaRespuesta = DateTime.fromISO(p.fecha).setZone("America/Bogota");
+    const horasPasadas = ahora.diff(fechaRespuesta, "hours").hours;
 
-      console.log(`   ⏱ Han pasado ${horasPasadas.toFixed(2)} horas desde la respuesta.`);
+    if (horasPasadas >= 0) {
+      const mensaje = `🔔 *Recordatorio de pago*
 
-      if (horasPasadas >= 0) {
-        const mensaje = `🔔 *Recordatorio de pago*
-      
-      Hola, hace un momento respondiste que *sí continuabas*, pero aún no hemos recibido tu comprobante de pago.
-      
-      💳 Puedes realizar el pago a *Nequi o Daviplata: 3183192913* y enviarlo por aquí para procesarlo. Estoy atento. 🙌`;
-      
-        await client.sendMessage(numero + "@c.us", mensaje);
-        console.log(`✅ Recordatorio enviado a ${numero}`);
-        enviados++;
-      }
-      
+Hola, hace un momento respondiste que *sí continuabas*, pero aún no hemos recibido tu comprobante de pago.
+
+💳 Puedes realizar el pago a *Nequi o Daviplata: 3183192913* y enviarlo por aquí para procesarlo. Estoy atento. 🙌`;
+
+      await client.sendMessage(numero + "@c.us", mensaje);
+      console.log(`✅ Recordatorio enviado a ${numero}`);
+      encontrados++;
+      continue; // <- lo excluye del nuevo array
     }
   }
+
+  // Si no se envió, mantenerlo en la lista
+  nuevasRespuestas.push(p);
+}
+
+// Guardar los que aún quedan pendientes
+fs.writeFileSync(rutaRespuestas, JSON.stringify(nuevasRespuestas, null, 2));
+
 
   if (encontrados === 0) {
     console.log("📭 No se encontraron clientes para enviar recordatorios.");
   } else {
     console.log(`📨 Recordatorios enviados a ${encontrados} cliente(s).`);
   }
+}
+
+function normalizarRespuestas(respuestas) {
+  if (Array.isArray(respuestas)) {
+    return respuestas;
+  }
+  return Object.keys(respuestas).map(numero => ({
+    numero,
+    ...respuestas[numero]
+  }));
 }
 
 // Si se ejecuta directamente

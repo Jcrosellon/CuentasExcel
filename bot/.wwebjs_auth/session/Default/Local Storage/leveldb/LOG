@@ -1,0 +1,57 @@
+2025/05/17-19:27:48.372 174c Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
+2025/05/17-19:27:48.375 174c Recovering log #3
+2025/05/17-19:27:48.375 174c Reusing old log C:\Users\JoseRosellon\CuentasExcel\bot\.wwebjs_auth\session\Default\Local Storage\leveldb/000003.log 
+2025/05/18-08:42:56.302 a7d0 Level-0 table #5: started
+2025/05/18-08:42:56.341 a7d0 Level-0 table #5: 21823 bytes OK
+2025/05/18-08:42:56.345 a7d0 Delete type=0 #3
+2025/05/18-10:09:40.480 ab38 Level-0 table #7: started
+2025/05/18-10:09:40.513 ab38 Level-0 table #7: 21859 bytes OK
+2025/05/18-10:09:40.525 ab38 Delete type=0 #4
+2025/05/18-11:36:24.920 b12c Level-0 table #9: started
+2025/05/18-11:36:24.951 b12c Level-0 table #9: 21868 bytes OK
+2025/05/18-11:36:24.955 b12c Delete type=0 #6
+2025/05/18-13:03:09.241 b12c Level-0 table #11: started
+2025/05/18-13:03:09.293 b12c Level-0 table #11: 21911 bytes OK
+2025/05/18-13:03:09.297 b12c Delete type=0 #8
+2025/05/18-14:29:53.082 a7d0 Level-0 table #13: started
+2025/05/18-14:29:53.095 a7d0 Level-0 table #13: 21878 bytes OK
+2025/05/18-14:29:53.104 a7d0 Delete type=0 #10
+2025/05/18-15:56:36.993 b1ac Level-0 table #15: started
+2025/05/18-15:56:37.024 b1ac Level-0 table #15: 21922 bytes OK
+2025/05/18-15:56:37.027 b1ac Delete type=0 #12
+2025/05/18-15:56:37.028 b1ac Compacting 4@0 + 1@1 files
+2025/05/18-15:56:37.034 b1ac Generated table #16@0: 3 keys, 368 bytes
+2025/05/18-15:56:37.034 b1ac Compacted 4@0 + 1@1 files => 368 bytes
+2025/05/18-15:56:37.035 b1ac compacted to: files[ 0 1 1 0 0 0 0 ]
+2025/05/18-15:56:37.036 b1ac Delete type=2 #7
+2025/05/18-15:56:37.036 b1ac Delete type=2 #9
+2025/05/18-15:56:37.036 b1ac Delete type=2 #11
+2025/05/18-15:56:37.036 b1ac Delete type=2 #13
+2025/05/18-15:56:37.036 b1ac Delete type=2 #15
+2025/05/18-18:50:05.919 9fc8 Level-0 table #18: started
+2025/05/18-18:50:05.923 9fc8 Level-0 table #18: 21903 bytes OK
+2025/05/18-18:50:05.925 9fc8 Delete type=0 #14
+2025/05/18-20:30:45.353 9b78 Level-0 table #20: started
+2025/05/18-20:30:45.381 9b78 Level-0 table #20: 21917 bytes OK
+2025/05/18-20:30:45.389 9b78 Delete type=0 #17
+2025/05/18-21:57:30.083 b1ac Level-0 table #22: started
+2025/05/18-21:57:30.117 b1ac Level-0 table #22: 21897 bytes OK
+2025/05/18-21:57:30.123 b1ac Delete type=0 #19
+2025/05/18-23:51:34.744 9fc8 Level-0 table #24: started
+2025/05/18-23:51:34.754 9fc8 Level-0 table #24: 21922 bytes OK
+2025/05/18-23:51:34.758 9fc8 Delete type=0 #21
+2025/05/18-23:51:34.760 9fc8 Compacting 4@0 + 1@1 files
+2025/05/18-23:51:34.768 9fc8 Generated table #25@0: 3 keys, 368 bytes
+2025/05/18-23:51:34.768 9fc8 Compacted 4@0 + 1@1 files => 368 bytes
+2025/05/18-23:51:34.771 9fc8 compacted to: files[ 0 1 1 0 0 0 0 ]
+2025/05/18-23:51:34.771 9fc8 Delete type=2 #16
+2025/05/18-23:51:34.772 9fc8 Delete type=2 #18
+2025/05/18-23:51:34.772 9fc8 Delete type=2 #20
+2025/05/18-23:51:34.772 9fc8 Delete type=2 #22
+2025/05/18-23:51:34.772 9fc8 Delete type=2 #24
+2025/05/19-02:44:34.737 b1ac Level-0 table #27: started
+2025/05/19-02:44:34.754 b1ac Level-0 table #27: 21965 bytes OK
+2025/05/19-02:44:34.759 b1ac Delete type=0 #23
+2025/05/19-05:37:37.236 9fc8 Level-0 table #29: started
+2025/05/19-05:37:37.268 9fc8 Level-0 table #29: 21928 bytes OK
+2025/05/19-05:37:37.273 9fc8 Delete type=0 #26

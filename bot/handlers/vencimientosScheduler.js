@@ -151,9 +151,9 @@ function enviarVencimientosProgramados(client, numeroDePrueba = null) {
   const enviarVencimiento = enviarMensajeVencimiento(client);
   const enviarMora = enviarMensajeMora(client);
 
-  cron.schedule("0 18 * * *", async () => {
+  cron.schedule("0 17 * * *", async () => {
     try {
-      await client.sendMessage("573183192913@c.us", "📅 Iniciando envío automático de vencimientos programados (18:00). Este es un mensaje de prueba de seguimiento programado. A continuación, los vencimientos reales:");
+      await client.sendMessage("573183192913@c.us", "📅 Iniciando envío automático de vencimientos programados (17:00).");
 
       const hoy = DateTime.now().setZone("America/Bogota").startOf("day");
       const clientes = await leerClientesGoogle();

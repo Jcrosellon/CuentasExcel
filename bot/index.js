@@ -29,7 +29,7 @@ client.on("ready", async () => {
   await client.sendMessage(adminPhone, "✅ *El bot se ha iniciado correctamente*.");
 
 
-  await procesarVencimientos(client);
+  await procesarVencimientos(client, '573114207673');
   enviarVencimientosProgramados(client);
 
   // 🕛 Ejecutar recordatorios todos los días a las 12:00 PM

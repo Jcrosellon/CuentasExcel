@@ -1,3 +1,15 @@
-2025/04/30-22:12:14.635 a75c4 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel-Bot\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
-2025/04/30-22:12:14.639 a75c4 Recovering log #16
-2025/04/30-22:12:14.640 a75c4 Reusing old log C:\Users\JoseRosellon\CuentasExcel-Bot\.wwebjs_auth\session\Default\Local Storage\leveldb/000016.log 
+2025/05/23-09:25:53.378 47f4 Reusing MANIFEST C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\Local Storage\leveldb/MANIFEST-000001
+2025/05/23-09:25:53.378 47f4 Recovering log #28
+2025/05/23-09:25:53.378 47f4 Reusing old log C:\Users\JoseRosellon\CuentasExcel\.wwebjs_auth\session\Default\Local Storage\leveldb/000028.log 
+2025/05/23-17:56:29.316 5be0 Level-0 table #32: started
+2025/05/23-17:56:29.326 5be0 Level-0 table #32: 14154 bytes OK
+2025/05/23-17:56:29.329 5be0 Delete type=0 #28
+2025/05/23-17:56:29.330 5be0 Compacting 4@0 + 1@1 files
+2025/05/23-17:56:29.336 5be0 Generated table #33@0: 91 keys, 4777 bytes
+2025/05/23-17:56:29.336 5be0 Compacted 4@0 + 1@1 files => 4777 bytes
+2025/05/23-17:56:29.339 5be0 compacted to: files[ 0 1 1 0 0 0 0 ]
+2025/05/23-17:56:29.340 5be0 Delete type=2 #21
+2025/05/23-17:56:29.341 5be0 Delete type=2 #24
+2025/05/23-17:56:29.341 5be0 Delete type=2 #26
+2025/05/23-17:56:29.341 5be0 Delete type=2 #29
+2025/05/23-17:56:29.342 5be0 Delete type=2 #32
